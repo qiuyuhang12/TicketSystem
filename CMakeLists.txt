@@ -1,0 +1,29 @@
+cmake_minimum_required(VERSION 3.29)
+project(TicketSystem)
+
+set(CMAKE_CXX_STANDARD 20)
+
+add_executable(TicketSystem
+        BPT/LRU.hpp
+        BPT/BPT.hpp
+        BPT/STLSrc/exceptions.hpp
+        BPT/STLSrc/map.hpp
+        BPT/STLSrc/my_print.hpp
+        BPT/STLSrc/my_sort.hpp
+        BPT/STLSrc/utility.hpp
+        BPT/STLSrc/vector.hpp
+        TicketSystem.hpp
+        main.cpp
+)
+add_executable(code
+        BPT/LRU.hpp
+        BPT/BPT.hpp
+        BPT/STLSrc/exceptions.hpp
+        BPT/STLSrc/map.hpp
+        BPT/STLSrc/my_print.hpp
+        BPT/STLSrc/my_sort.hpp
+        BPT/STLSrc/utility.hpp
+        BPT/STLSrc/vector.hpp
+        TicketSystem.hpp
+        main.cpp
+)
