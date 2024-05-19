@@ -33,6 +33,9 @@ class BPT {
 public:
     std::fstream bptNodes;
     std::fstream bptBlocks;
+    std::string filename="";
+    std::string nodesPath="";
+    std::string blocksPath="";
     ll root = 1e3;
     ll nodeNum = 0;
     ll blockNum = 0;
@@ -53,8 +56,8 @@ public:
     }
 
     static const ll cut = 1e3;
-    static const int M = 49;
-    static const int L = 50 + 1;
+    static const int M = 4000/sizeof(Key);
+    static const int L = 4000/sizeof(Value);
 
     struct node {
         bool isRoot = false;
@@ -945,14 +948,16 @@ public:
     }
 
 public:
-    BPT() {
+    BPT(std::string filePath):filename(std::move(filePath)){
+        nodesPath= filename + "Nodes";
+        blocksPath= filename + "Blocks";
         bool flag = false;
-        bptNodes.open("bptNodes", std::ios::in | std::ios::out | std::ios::binary);
-        bptBlocks.open("bptBlocks", std::ios::in | std::ios::out | std::ios::binary);
+        bptNodes.open(nodesPath, std::ios::in | std::ios::out | std::ios::binary);
+        bptBlocks.open(blocksPath, std::ios::in | std::ios::out | std::ios::binary);
         if (!bptNodes) {
-            bptNodes.open("bptNodes", std::ios::out | std::ios::binary);
+            bptNodes.open(nodesPath, std::ios::out | std::ios::binary);
             bptNodes.close();
-            bptNodes.open("bptNodes", std::ios::in | std::ios::out | std::ios::binary);
+            bptNodes.open(nodesPath, std::ios::in | std::ios::out | std::ios::binary);
             node *_Root = new node(true, true, 0, 0);
             writeNodeToEnd(_Root);
             nodeNum = 1;
@@ -960,9 +965,9 @@ public:
             assert(!bptBlocks);
         }
         if (!bptBlocks) {
-            bptBlocks.open("bptBlocks", std::ios::out | std::ios::binary);
+            bptBlocks.open(blocksPath, std::ios::out | std::ios::binary);
             bptBlocks.close();
-            bptBlocks.open("bptBlocks", std::ios::in | std::ios::out | std::ios::binary);
+            bptBlocks.open(blocksPath, std::ios::in | std::ios::out | std::ios::binary);
             block *_block = new block(1, -1, -1, NodesFileEnd - sizeof(node));
             _block->data[0].key.isMin = true;
             writeBlockToEnd(_block);
@@ -973,8 +978,8 @@ public:
             exit(1);
         }
         if (flag) {
-            lruNode.enableFile("bptNodes");
-            lruBlock.enableFile("bptBlocks");
+            lruNode.enableFile(nodesPath);
+            lruBlock.enableFile(blocksPath);
             return;
         }
         bptNodes.seekg(0);
@@ -984,8 +989,8 @@ public:
         bptNodes.read(reinterpret_cast<char *>(&NodesFileEnd), sizeof(ll));
         bptNodes.read(reinterpret_cast<char *>(&BlocksFileEnd), sizeof(ll));
         bptNodes.read(reinterpret_cast<char *>(&size), sizeof(ll));
-        lruNode.enableFile("bptNodes");
-        lruBlock.enableFile("bptBlocks");
+        lruNode.enableFile(nodesPath);
+        lruBlock.enableFile(blocksPath);
     }
 
     ~BPT() {
@@ -1029,6 +1034,7 @@ public:
         }
     }
 
+    //    找到不重Key对应的value并返回
     Value find2(Key key) {
         nodeParent.clear();
         blockParent.clear();
@@ -1055,6 +1061,7 @@ public:
         std::cout << '\n';
     }
 
+//    找到可重Key对应的所有value并输出
     void find(Key key) {
         nodeParent.clear();
         blockParent.clear();
@@ -1078,6 +1085,7 @@ public:
         std::cout << '\n';
     }
 
+    //    找到可重Key对应的value并返回sjtu::vector<Value>
     sjtu::vector<Value> find3(Key key) {
         sjtu::vector<Value> ans;
         nodeParent.clear();
@@ -1101,11 +1109,15 @@ public:
         }
         return ans;
     }
+
+    ll size_() {
+        return size;
+    }
 };
 
-void clearFile() {
-    std::filesystem::remove("bptNodes");
-    std::filesystem::remove("bptBlocks");
-}
+//void clearFile() {
+//    std::filesystem::remove("bptNodes");
+//    std::filesystem::remove("bptBlocks");
+//}
 
 #endif //BPT_BPT_HPP

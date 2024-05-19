@@ -8,12 +8,127 @@
 
 #include "BPT/BPT.hpp"
 
+#ifdef debug
+
+#include <vector>
+#include <map>
+
+template<typename T>
+std::vector<T> sjtuVtoStdV(const sjtu::vector<T> &v) {
+    std::vector<T> rsl;
+    for (auto &i: v) {
+        rsl.push_back(i);
+    }
+    return rsl;
+}
+
+#define sjtu std
+#endif
+
+
+void splitString(const std::string &str, sjtu::vector<std::string> &res) {
+    res.clear();
+    std::string tmp;
+    for (int i = 0; i < str.size(); ++i) {
+#ifdef debug
+        if (str[i] == '\n')assert(i == str.size() - 1);
+#endif
+        if (str[i] == ' ' || str[i] == '\r' || str[i] == '\t' || str[i] == '\v' || str[i] == '\f') {
+            if (tmp.empty())continue;
+            res.push_back(tmp);
+            tmp.clear();
+        } else {//utf-8
+            //11110xxx
+            if (str[i] >> 3 == (char) 0b11111110) {
+//                std::cout<<"11110xxx------------------------------------------------"<<std::endl;
+                tmp.push_back(str[i]);
+                tmp.push_back(str[i + 1]);
+                tmp.push_back(str[i + 2]);
+                tmp.push_back(str[i + 3]);
+                i += 3;
+            }
+                //1110xxxx
+            else if (str[i] >> 4 == (char) 0b11111110) {
+//                std::cout<<"1110xxxx------------------------------------------------"<<std::endl;
+                tmp.push_back(str[i]);
+                tmp.push_back(str[i + 1]);
+                tmp.push_back(str[i + 2]);
+                i += 2;
+            }
+                //110xxxxx
+            else if (str[i] >> 5 == (char) 0b11111110) {
+//                std::cout<<"110xxxxx------------------------------------------------"<<std::endl;
+                tmp.push_back(str[i]);
+                tmp.push_back(str[i + 1]);
+                i += 1;
+            }
+                //10xxxxxxx&0xxxxxxx
+            else {
+//                if (str[i]>>6 == (char)0b11111110)std::cout<<"10xxxxxxx------------------------------------------------"<<std::endl;
+//                else std::cout<<"0xxxxxxx------------------------------------------------"<<std::endl;
+                tmp.push_back(str[i]);
+            }
+        }
+    }
+    if (!tmp.empty())res.push_back(tmp);
+}
+
+int timestampStrToInt(const std::string &str) {
+#ifdef debug
+    assert(str.size() > 2);
+    assert(str[0] == '[');
+    assert(str[str.size() - 1] == ']');
+#endif
+    int rsl = 0;
+    for (int i = 1; i < str.size() - 1; ++i) {
+        rsl = rsl * 10 + str[i] - '0';
+    }
+    return rsl;
+}
+
+int StringToInt(const std::string &str) {
+    int rsl = 0;
+    for (int i = 0; i < str.size(); ++i) {
+#ifdef debug
+        assert(str[i] >= '0' && str[i] <= '9');
+#endif
+        rsl = rsl * 10 + str[i] - '0';
+    }
+    return rsl;
+}
+
+void clearFile() {
+    remove("Station_TrainID_ToTrainForQTBlocks");
+    remove("Station_TrainID_ToTrainForQTNodes");
+    remove("Station_TrainID_ToTrainForQTOlyIDBlocks");
+    remove("Station_TrainID_ToTrainForQTOlyIDNodes");
+    remove("TrainID_ToTrainBlocks");
+    remove("TrainID_ToTrainNodes");
+    remove("TrainIDDate_ToPendsBlocks");
+    remove("TrainIDDate_ToPendsNodes");
+    remove("TrainIDDate_ToReleasedTrainBlocks");
+    remove("TrainIDDate_ToReleasedTrainNodes");
+    remove("Username_ToOrdersBlocks");
+    remove("Username_ToOrdersNodes");
+    remove("Username_ToUserBlocks");
+    remove("Username_ToUserNodes");
+}
+//int timeStrToInt(const std::string &str) {
+//    int hh = (str[0] - '0') * 10 + (str[1] - '0');
+//    int mm = (str[3] - '0') * 10 + (str[4] - '0');
+//    return hh * 60 + mm;
+//}
+
 class TicketSystem {
-private://basic data structure
+private:
 #ifdef debug
 public:
 #endif
 
+private://basic data structure
+#ifdef debug
+public:
+#endif
 //    todo：修改price为累计价格
     enum orderStatus {
         success,
@@ -337,8 +452,8 @@ public:
     };
     struct LogUser {
         int timestamp = 0;//only for debug (logInTime)
-        char username[21] = {};//unique
-        char privilege = 0;
+//        char username[21] = {};//unique
+        int privilege = 0;
     };
 
     //注意换乘排除同一辆车
@@ -663,7 +778,7 @@ public:
         }
     };
 
-    sjtu::map<std::string, User> UserMap;
+    sjtu::map<std::string, LogUser> UserMap;
     BPT<UsernameForBPT, User> Username_ToUser;
     BPT<TrainIDForBPT, Train> TrainID_ToTrain;
     BPT<TrainIDDateForBPT, releasedTrain> TrainIDDate_ToReleasedTrain;
@@ -671,10 +786,300 @@ public:
     BPT<Station_TrainIDForBPT, TrainForQTOnlyId> Station_TrainID_ToTrainForQTOlyId;
     BPT<TrainIDDateForBPT, Pend> TrainIDDate_ToPends;
     BPT<UsernameForBPT, Order> Username_ToOrders;
+private://实现函数
+#ifdef debug
 public:
-    TicketSystem() {}
+#endif
+
+//    void _addUser(User &user) {
+//        Username_ToUser.insert(UsernameForBPT(user.username), user);
+//    }
+    void _getUser(const std::string &username, User &user) {}
+//    void _addTrain(Train &train) {
+//        TrainID_ToTrain.insert(TrainIDForBPT(train.trainID), train);
+//    }
+private://主分支函数
+#ifdef debug
+public:
+    //todo WARNING 或许ADDUSER指令不全/重复！
+    void addUser(int timestamp, sjtu::vector<std::string> &v) {
+        User user;
+        user.timestamp = timestamp;
+        int flag = 0;
+        int curPrivilege = 0;
+        for (int i = 0; i < v.size(); ++i) {
+            if (v[i] == "-c") {
+                if (Username_ToUser.size_() == 0) {
+                    ++i;
+                    continue;
+                }
+                auto iter = UserMap.find(v[++i]);
+                if (iter == UserMap.end()) {
+                    std::cout << -1 << std::endl;
+                    return;
+                }
+                curPrivilege = iter->second.privilege;
+            } else if (v[i] == "-g") {
+                user.privilege = StringToInt(v[++i]);
+            } else if (v[i] == "-u") {
+                strcpy(user.username, v[++i].c_str());
+                flag = i;
+            } else if (v[i] == "-p") {
+                strcpy(user.password, v[++i].c_str());
+            } else if (v[i] == "-n") {
+                strcpy(user.name, v[++i].c_str());
+            } else if (v[i] == "-m") {
+                strcpy(user.mailAddr, v[++i].c_str());
+            }
+        }
+        if (Username_ToUser.size_() == 0) {
+            user.privilege = 10;
+            Username_ToUser.insert(UsernameForBPT(v[flag]), user);
+            std::cout << 0 << std::endl;
+        } else {
+            if (curPrivilege <= user.privilege) {
+                std::cout << -1 << std::endl;
+                return;
+            }
+            Username_ToUser.insert(UsernameForBPT(v[flag]), user);
+            std::cout << 0 << std::endl;
+        }
+    }
+
+    void login(int timestamp, sjtu::vector<std::string> &v) {
+        LogUser logUser;
+        logUser.timestamp = timestamp;
+        char *truePsw;
+        std::string *Psw, username;
+        for (int i = 0; i < v.size(); ++i) {
+            if (v[i] == "-u") {
+                username = v[++i];
+                if (UserMap.find(v[i]) != UserMap.end()) {
+                    std::cout << -1 << std::endl;
+                    return;
+                }
+                //考虑move
+                auto vec = Username_ToUser.find3(UsernameForBPT(v[i]));
+                if (vec.empty()) {
+                    std::cout << -1 << std::endl;
+                    return;
+                }
+#ifdef debug
+                assert(vec.size() == 1);
+#endif
+                truePsw = vec[0].password;
+                logUser.privilege = vec[0].privilege;
+            } else if (v[i] == "-p") {
+                Psw = &v[++i];
+            }
+        }
+        if (strcmp(truePsw, Psw->c_str()) == 0) {
+            UserMap[username] = logUser;
+            std::cout << 0 << std::endl;
+        } else {
+            std::cout << -1 << std::endl;
+        }
+    }
+
+    void logout(int timestamp, sjtu::vector<std::string> &v) {
+        std::string username;
+        for (int i = 0; i < v.size(); ++i) {
+            if (v[i] == "-u") {
+                username = v[++i];
+            }
+        }
+        if (UserMap.find(username) == UserMap.end()) {
+            std::cout << -1 << std::endl;
+            return;
+        }
+        UserMap.erase(username);
+        std::cout << 0 << std::endl;
+    }
+
+    void queryProfile(int timestamp, sjtu::vector<std::string> &v) {
+        std::string *curUser, *targetUser;
+        for (int i = 0; i < v.size(); ++i) {
+            if (v[i] == "-c") {
+                curUser = &v[++i];
+            } else if (v[i] == "-u") {
+                targetUser = &v[++i];
+            }
+        }
+        auto itr = UserMap.find(*curUser);
+        if (itr == UserMap.end()) {
+            std::cout << -1 << std::endl;
+            return;
+        }
+        //考虑move
+        auto vec = Username_ToUser.find3(UsernameForBPT(*targetUser));
+        if (vec.empty()) {
+            std::cout << -1 << std::endl;
+            return;
+        }
+#ifdef debug
+        assert(vec.size() == 1);
+#endif
+        bool f1 = (itr->second.privilege > vec[0].privilege);
+        bool f2 = (*curUser == *targetUser);
+        if (!f1 && !f2) {
+            std::cout << -1 << std::endl;
+            return;
+        }
+        User &user = vec[0];
+        std::cout << user.username << " " << user.name << " " << user.mailAddr << " " << user.privilege << std::endl;
+    }
+
+    void modifyProfile(int timestamp, sjtu::vector<std::string> &v) {
+        std::string *curUser, *targetUser;
+        int privilege = 0;
+        for (int i = 0; i < v.size(); ++i) {
+            if (v[i] == "-c") {
+                curUser = &v[++i];
+            } else if (v[i] == "-u") {
+                targetUser = &v[++i];
+            } else if (v[i] == "-g") {
+                privilege = StringToInt(v[++i]);
+            } else ++i;
+        }
+        auto itr = UserMap.find(*curUser);
+        if (itr == UserMap.end() || itr->second.privilege <= privilege) {
+            std::cout << -1 << std::endl;
+            return;
+        }
+        //考虑move
+        auto vec = Username_ToUser.find3(UsernameForBPT(*targetUser));
+        if (vec.empty()) {
+            std::cout << -1 << std::endl;
+            return;
+        }
+#ifdef debug
+        assert(vec.size() == 1);
+#endif
+        bool f1 = (itr->second.privilege > vec[0].privilege);
+        bool f2 = (*curUser == *targetUser);
+        if (!f1 && !f2) {
+            std::cout << -1 << std::endl;
+            return;
+        }
+//todo:优化:不删除，只修改！
+        Username_ToUser.delete_(UsernameForBPT(*targetUser), vec[0]);
+        for (int i = 0; i < v.size(); ++i) {
+            if (v[i] == "-p") {
+                strcpy(vec[0].password, v[++i].c_str());
+            } else if (v[i] == "-n") {
+                strcpy(vec[0].name, v[++i].c_str());
+            } else if (v[i] == "-m") {
+                strcpy(vec[0].mailAddr, v[++i].c_str());
+            } else if (v[i] == "-g") {
+                vec[0].privilege = privilege;
+            }
+        }
+        Username_ToUser.insert(UsernameForBPT(*targetUser), vec[0]);
+        std::cout << vec[0].username << " " << vec[0].name << " " << vec[0].mailAddr << " " << vec[0].privilege
+                  << std::endl;
+    }
+
+    void addTrain(int timestamp, sjtu::vector<std::string> &v) {}
+
+    void deleteTrain(int timestamp, sjtu::vector<std::string> &v) {}
+
+    void releaseTrain(int timestamp, sjtu::vector<std::string> &v) {}
+
+    void queryTrain(int timestamp, sjtu::vector<std::string> &v) {}
+
+    void queryTicket(int timestamp, sjtu::vector<std::string> &v) {}
+
+    void queryTransfer(int timestamp, sjtu::vector<std::string> &v) {}
+
+    void buyTicket(int timestamp, sjtu::vector<std::string> &v) {}
+
+    void queryOrder(int timestamp, sjtu::vector<std::string> &v) {}
+
+    void refundTicket(int timestamp, sjtu::vector<std::string> &v) {}
+
+    void clean() {}
+
+    void exit() {
+        std::cout << "bye" << std::endl;
+    }
+
+#endif
+public:
+    TicketSystem() : Username_ToUser("Username_ToUser"), Username_ToOrders("Username_ToOrders"),
+                     TrainID_ToTrain("TrainID_ToTrain"),
+                     TrainIDDate_ToReleasedTrain("TrainIDDate_ToReleasedTrain"),
+                     Station_TrainID_ToTrainForQT("Station_TrainID_ToTrainForQT"),
+                     Station_TrainID_ToTrainForQTOlyId("Station_TrainID_ToTrainForQTOlyID"),
+                     TrainIDDate_ToPends("TrainIDDate_ToPends") {
+    }
+
+    void run() {
+        while (true) {
+            std::string timestampStr, cmd;
+            std::cin >> timestampStr >> cmd;
+            std::cout<<timestampStr<<' ';
+            if (cmd == "clean") {
+                clean();
+            }
+            if (cmd == "exit") {
+                exit();
+                return;
+            }
+            int timestamp = timestampStrToInt(timestampStr);
+            sjtu::vector<std::string> v;
+            std::string message;
+            getline(std::cin, message);
+            splitString(message, v);
+            if (cmd == "add_user") {
+                addUser(timestamp, v);
+            }
+            if (cmd == "login") {
+                login(timestamp, v);
+            }
+            if (cmd == "logout") {
+                logout(timestamp, v);
+            }
+            if (cmd == "query_profile") {
+                queryProfile(timestamp, v);
+            }
+            if (cmd == "modify_profile") {
+                modifyProfile(timestamp, v);
+            }
+            if (cmd == "add_train") {
+                addTrain(timestamp, v);
+            }
+            if (cmd == "delete_train") {
+                deleteTrain(timestamp, v);
+            }
+            if (cmd == "release_train") {
+                releaseTrain(timestamp, v);
+            }
+            if (cmd == "query_train") {
+                queryTrain(timestamp, v);
+            }
+            if (cmd == "query_ticket") {
+                queryTicket(timestamp, v);
+            }
+            if (cmd == "query_transfer") {
+                queryTransfer(timestamp, v);
+            }
+            if (cmd == "buy_ticket") {
+                buyTicket(timestamp, v);
+            }
+            if (cmd == "query_order") {
+                queryOrder(timestamp, v);
+            }
+            if (cmd == "refund_ticket") {
+                refundTicket(timestamp, v);
+            }
+        }
+#ifdef debug
+        std::cerr << "error command" << std::endl;
+#endif
+    }
 
     ~TicketSystem() {}
+
 };
 
 #endif //TICKETSYSTEM_TICKETSYSTEM_HPP
