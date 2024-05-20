@@ -7,8 +7,8 @@
 #define debug
 
 #include "BPT/BPT.hpp"
-
 #ifdef debug
+
 
 #include <vector>
 #include <map>
@@ -23,89 +23,23 @@ std::vector<T> sjtuVtoStdV(const sjtu::vector<T> &v) {
 }
 
 #define sjtu std
+#include "BigBlockBpt.hpp"
+#include "StringFunction.hpp"
+#include "DateAndTimeStruct.hpp"
 #endif
-
-
-void splitString(const std::string &str, sjtu::vector<std::string> &res) {
-    res.clear();
-    std::string tmp;
-    for (int i = 0; i < str.size(); ++i) {
-#ifdef debug
-        if (str[i] == '\n')assert(i == str.size() - 1);
-#endif
-        if (str[i] == ' ' || str[i] == '\r' || str[i] == '\t' || str[i] == '\v' || str[i] == '\f') {
-            if (tmp.empty())continue;
-            res.push_back(tmp);
-            tmp.clear();
-        } else {//utf-8
-            //11110xxx
-            if (str[i] >> 3 == (char) 0b11111110) {
-//                std::cout<<"11110xxx------------------------------------------------"<<std::endl;
-                tmp.push_back(str[i]);
-                tmp.push_back(str[i + 1]);
-                tmp.push_back(str[i + 2]);
-                tmp.push_back(str[i + 3]);
-                i += 3;
-            }
-                //1110xxxx
-            else if (str[i] >> 4 == (char) 0b11111110) {
-//                std::cout<<"1110xxxx------------------------------------------------"<<std::endl;
-                tmp.push_back(str[i]);
-                tmp.push_back(str[i + 1]);
-                tmp.push_back(str[i + 2]);
-                i += 2;
-            }
-                //110xxxxx
-            else if (str[i] >> 5 == (char) 0b11111110) {
-//                std::cout<<"110xxxxx------------------------------------------------"<<std::endl;
-                tmp.push_back(str[i]);
-                tmp.push_back(str[i + 1]);
-                i += 1;
-            }
-                //10xxxxxxx&0xxxxxxx
-            else {
-//                if (str[i]>>6 == (char)0b11111110)std::cout<<"10xxxxxxx------------------------------------------------"<<std::endl;
-//                else std::cout<<"0xxxxxxx------------------------------------------------"<<std::endl;
-                tmp.push_back(str[i]);
-            }
-        }
-    }
-    if (!tmp.empty())res.push_back(tmp);
-}
-
-int timestampStrToInt(const std::string &str) {
-#ifdef debug
-    assert(str.size() > 2);
-    assert(str[0] == '[');
-    assert(str[str.size() - 1] == ']');
-#endif
-    int rsl = 0;
-    for (int i = 1; i < str.size() - 1; ++i) {
-        rsl = rsl * 10 + str[i] - '0';
-    }
-    return rsl;
-}
-
-int StringToInt(const std::string &str) {
-    int rsl = 0;
-    for (int i = 0; i < str.size(); ++i) {
-#ifdef debug
-        assert(str[i] >= '0' && str[i] <= '9');
-#endif
-        rsl = rsl * 10 + str[i] - '0';
-    }
-    return rsl;
-}
 
 void clearFile() {
+    remove("Station_TrainID_ToTrainForQT");
     remove("Station_TrainID_ToTrainForQTBlocks");
     remove("Station_TrainID_ToTrainForQTNodes");
     remove("Station_TrainID_ToTrainForQTOlyIDBlocks");
     remove("Station_TrainID_ToTrainForQTOlyIDNodes");
+    remove("TrainID_ToTrain");
     remove("TrainID_ToTrainBlocks");
     remove("TrainID_ToTrainNodes");
     remove("TrainIDDate_ToPendsBlocks");
     remove("TrainIDDate_ToPendsNodes");
+    remove("TrainIDDate_ToReleasedTrain");
     remove("TrainIDDate_ToReleasedTrainBlocks");
     remove("TrainIDDate_ToReleasedTrainNodes");
     remove("Username_ToOrdersBlocks");
@@ -113,11 +47,6 @@ void clearFile() {
     remove("Username_ToUserBlocks");
     remove("Username_ToUserNodes");
 }
-//int timeStrToInt(const std::string &str) {
-//    int hh = (str[0] - '0') * 10 + (str[1] - '0');
-//    int mm = (str[3] - '0') * 10 + (str[4] - '0');
-//    return hh * 60 + mm;
-//}
 
 class TicketSystem {
 private:
@@ -136,51 +65,6 @@ public:
         refunded
     };
 
-    struct Time {//without =
-        int hh = 0;
-        int mm = 0;
-
-        Time() = default;
-
-        Time(int _hh, int _mm) : hh(_hh), mm(_mm) {}
-
-        Time(Time const &other) = default;
-    };
-
-    struct Date {//without =
-        int mm = 0;
-        int dd = 0;
-
-        Date() = default;
-
-        Date(int _mm, int _dd) : mm(_mm), dd(_dd) {}
-
-        Date(Date const &other) = default;
-    };
-
-    struct DateAndTime {
-        Date date;
-        Time time;
-
-        DateAndTime() = default;
-
-        DateAndTime(Date _date, Time _time) : date(_date), time(_time) {}
-    };
-
-    static Time IntToTime(int x) {
-        return {x / 60, x % 60};
-    }
-
-    static Date IntToDate(int x) {
-//        x is from june to august
-        if (x <= 30) return {6, x};
-        if (31 <= x && x <= 61) return {7, x - 30};
-        return {8, x - 61};
-    }
-
-    static DateAndTime IntToDateAndTime(int x) {
-        return {IntToDate(x / 1440), IntToTime(x % 1440)};
-    }
 
     struct User {
         int timestamp = 0;//only for debug (createTime)
@@ -242,7 +126,7 @@ public:
         int stationNum = 0;
         char stations[101][31] = {};
         int seatNum = 0;
-        int price[101] = {};//0无意义（为0），1为始发站到第一站的价格
+        int price[101] = {};
         int startTime = 0;
         int travelTime[101] = {};
         int stopoverTime[101] = {};
@@ -352,23 +236,23 @@ public:
         int startTime = 0;
         int travelTime[101] = {};//0无意义（为0），1为始发站到第一站的时间
         int stopoverTime[101] = {};//0无意义（为0），1为第一站停靠时间
-        int price[101] = {};
+        int price[101] = {};//0无意义（为0），1为始发站到第一站的累计价格
         int restTickets[101] = {};//0为从始发站到第一站的余票
         int seatNum = 0;//only for debug
         char type = 0;//only for debug
         //默认构造，从变量构造，拷贝构造，拷贝赋值，< 重载，== 重载，!= 重载
         releasedTrain() = default;
 
-        releasedTrain(const std::string &_trainID, int _date, int _stationNum,
-                      const sjtu::vector<std::string> &_stations,
-                      int _startTime, const sjtu::vector<int> &_travelTime, const sjtu::vector<int> &_stopoverTime,
-                      const sjtu::vector<int> &_price, const sjtu::vector<int> &_restTickets, int _seatNum, char _type,
+        releasedTrain(char *_trainID, int _date, int _stationNum,
+                      char(*_stations)[31],
+                      int _startTime, const int *_travelTime, const int *_stopoverTime,
+                      const int *_price, int _seatNum, char _type,
                       int _timestamp = 0) : timestamp(_timestamp) {
-            strcpy(trainID, _trainID.c_str());
+            strcpy(trainID, _trainID);
             date = _date;
             stationNum = _stationNum;
             for (int i = 0; i < stationNum; i++) {
-                strcpy(stations[i], _stations[i].c_str());
+                strcpy(stations[i], _stations[i]);
             }
             startTime = _startTime;
             for (int i = 0; i < stationNum; i++) {
@@ -381,7 +265,7 @@ public:
                 price[i] = _price[i];
             }
             for (int i = 0; i < stationNum; i++) {
-                restTickets[i] = _restTickets[i];
+                restTickets[i] = _seatNum;
             }
             seatNum = _seatNum;
             type = _type;
@@ -425,6 +309,30 @@ public:
 
         bool operator!=(const releasedTrain &other) const {
             return strcmp(trainID, other.trainID) != 0 || date != other.date;
+        }
+
+        void print() {
+            std::cout << trainID << " " << type << std::endl;
+            int time=0;
+            for (int i = 0; i < stationNum; ++i) {
+                std::cout << stations[i] << " ";
+                if (i == 0) {
+                    std::cout << "xx-xx xx:xx -> ";
+                } else {
+                    std::cout << makeDateAndTime(date, time += travelTime[i]) << " -> ";
+                }
+                if (i != stationNum - 1) {
+                    std::cout << makeDateAndTime(date, time += stopoverTime[i]) << " ";
+                } else {
+                    std::cout << "xx-xx xx:xx ";
+                }
+                std::cout << price[i] << " ";
+                if (i == stationNum - 1) {
+                    std::cout << "x" << std::endl;
+                } else {
+                    std::cout << restTickets[i] << std::endl;
+                }
+            }
         }
     };
 
@@ -472,17 +380,17 @@ public:
         //默认构造，从变量构造，拷贝构造，拷贝赋值，< 重载，== 重载，!= 重载
         TrainForQT() = default;
 
-        TrainForQT(const std::string &_trainID, int _nowStation, int _nowTime, int _nowPrice, int _stationNum,
-                   const sjtu::vector<std::string> &_stations, const sjtu::vector<int> &_saleDate,
-                   const sjtu::vector<int> &_travelTime, const sjtu::vector<int> &_stopoverTime,
-                   const sjtu::vector<int> &_price, char _type) {
-            strcpy(trainID, _trainID.c_str());
+        TrainForQT(const char *_trainID, int _nowStation, int _nowTime, int _nowPrice, int _stationNum,
+                   const char (*_stations)[31], const int *_saleDate,
+                   const int *_travelTime, const int *_stopoverTime,
+                   const int *_price, char _type) {
+            strcpy(trainID, _trainID);
             nowStation = _nowStation;
             nowTime = _nowTime;
             nowPrice = _nowPrice;
             stationNum = _stationNum;
             for (int i = 0; i < stationNum; i++) {
-                strcpy(stations[i], _stations[i].c_str());
+                strcpy(stations[i], _stations[i]);
             }
             for (int i = 0; i < 2; i++) {
                 saleDate[i] = _saleDate[i];
@@ -544,14 +452,19 @@ public:
         int nowStation = 0;//是第几站（0为始发站）
         int nowTime = 0;//到达本站时间（可大于24：00，以发车日0时为准）
         int nowPrice = 0;//当前车票累计价格
+        int saleDate[2] = {};
+
         //默认构造，从变量构造，拷贝构造，拷贝赋值，< 重载，== 重载，!= 重载
         TrainForQTOnlyId() = default;
 
-        TrainForQTOnlyId(const std::string &_trainID, int _nowStation, int _nowTime, int _nowPrice) {
-            strcpy(trainID, _trainID.c_str());
+        TrainForQTOnlyId(const char *_trainID, int _nowStation, int _nowTime, int _nowPrice, const int _saleDate[2]) {
+            strcpy(trainID, _trainID);
             nowStation = _nowStation;
             nowTime = _nowTime;
             nowPrice = _nowPrice;
+            for (int i = 0; i < 2; i++) {
+                saleDate[i] = _saleDate[i];
+            }
         }
 
         TrainForQTOnlyId &operator=(TrainForQTOnlyId const &other) {
@@ -560,6 +473,9 @@ public:
             nowStation = other.nowStation;
             nowTime = other.nowTime;
             nowPrice = other.nowPrice;
+            for (int i = 0; i < 2; i++) {
+                saleDate[i] = other.saleDate[i];
+            }
             return *this;
         }
 
@@ -716,9 +632,9 @@ public:
 
         ValForStation_TrainIDForBPT() = default;
 
-        ValForStation_TrainIDForBPT(const std::string &_station, const std::string &_trainID) {
-            strcpy(station, _station.c_str());
-            strcpy(trainID, _trainID.c_str());
+        ValForStation_TrainIDForBPT(const char *_station, const char *_trainID) {
+            strcpy(station, _station);
+            strcpy(trainID, _trainID);
         }
 
         ValForStation_TrainIDForBPT(const ValForStation_TrainIDForBPT &other) {
@@ -755,7 +671,7 @@ public:
 
         Station_TrainIDForBPT() = default;
 
-        Station_TrainIDForBPT(const std::string &_station, const std::string &_trainID) : val(_station, _trainID) {}
+        Station_TrainIDForBPT(const char *_station, const char *_trainID) : val(_station, _trainID) {}
 
         Station_TrainIDForBPT(const Station_TrainIDForBPT &other) : val(other.val) {}
 
@@ -778,11 +694,13 @@ public:
         }
     };
 
+
     sjtu::map<std::string, LogUser> UserMap;
     BPT<UsernameForBPT, User> Username_ToUser;
-    BPT<TrainIDForBPT, Train> TrainID_ToTrain;
-    BPT<TrainIDDateForBPT, releasedTrain> TrainIDDate_ToReleasedTrain;
-    BPT<Station_TrainIDForBPT, TrainForQT> Station_TrainID_ToTrainForQT;
+
+    BigBlockBpt<TrainIDForBPT, Train> TrainID_ToTrain;
+    BigBlockBpt<TrainIDDateForBPT, releasedTrain> TrainIDDate_ToReleasedTrain;
+    BigBlockBpt<Station_TrainIDForBPT, TrainForQT> Station_TrainID_ToTrainForQT;
     BPT<Station_TrainIDForBPT, TrainForQTOnlyId> Station_TrainID_ToTrainForQTOlyId;
     BPT<TrainIDDateForBPT, Pend> TrainIDDate_ToPends;
     BPT<UsernameForBPT, Order> Username_ToOrders;
@@ -791,16 +709,41 @@ private://实现函数
 public:
 #endif
 
+    LogUser *_getLoggedUser(const std::string &username) {
+        auto iter = UserMap.find(username);
+        if (iter == UserMap.end())return nullptr;
+        return &iter->second;
+    }
+
 //    void _addUser(User &user) {
 //        Username_ToUser.insert(UsernameForBPT(user.username), user);
 //    }
     void _getUser(const std::string &username, User &user) {}
+
+    sjtu::vector<Train> _getTrainVec(const std::string &trainID) {
+//#ifndef debug
+        return TrainID_ToTrain.find3(TrainIDForBPT(trainID));
+//#endif
+//        return sjtuVtoStdV(TrainID_ToTrain.find3(TrainIDForBPT(trainID)));
+    }
+
+    bool exitTrain(const std::string &trainID) {
+        return !TrainID_ToTrain.find3(TrainIDForBPT(trainID)).empty();
+    }
+
+    bool raw(const std::string &trainID) {
+        auto vec = TrainID_ToTrain.find3(TrainIDForBPT(trainID));
+        return !(vec.empty() || vec[0].released);
+    }
+
 //    void _addTrain(Train &train) {
 //        TrainID_ToTrain.insert(TrainIDForBPT(train.trainID), train);
 //    }
 private://主分支函数
 #ifdef debug
 public:
+#endif
+
     //todo WARNING 或许ADDUSER指令不全/重复！
     void addUser(int timestamp, sjtu::vector<std::string> &v) {
         User user;
@@ -972,6 +915,8 @@ public:
                 strcpy(vec[0].mailAddr, v[++i].c_str());
             } else if (v[i] == "-g") {
                 vec[0].privilege = privilege;
+                auto ptr = _getLoggedUser(*targetUser);
+                if (ptr)ptr->privilege = privilege;
             }
         }
         Username_ToUser.insert(UsernameForBPT(*targetUser), vec[0]);
@@ -979,13 +924,141 @@ public:
                   << std::endl;
     }
 
-    void addTrain(int timestamp, sjtu::vector<std::string> &v) {}
+    void addTrain(int timestamp, sjtu::vector<std::string> &v) {
+        Train train;
+        train.timestamp = timestamp;
+        for (int i = 0; i < v.size(); ++i) {
+            if (v[i] == "-i") {
+                if (exitTrain(v[++i])) {
+                    std::cout << -1 << std::endl;
+                    return;
+                }
+                strcpy(train.trainID, v[i].c_str());
+            } else if (v[i] == "-n") {
+                train.stationNum = StringToInt(v[++i]);
+            } else if (v[i] == "-m") {
+                train.seatNum = StringToInt(v[++i]);
+            } else if (v[i] == "-s") {
+                sjtu::vector<std::string> stations;
+                splitSplitString(v[++i], stations);
+//#ifdef debug
+//                You cannot use assert here, because the number of stations can be 0.
+//                assert(stations.size() == train.stationNum);
+//#endif
+                for (int j = 0; j < stations.size(); j++) {
+                    strcpy(train.stations[j], stations[j].c_str());
+                }
+            } else if (v[i] == "-p") {
+                sjtu::vector<std::string> vec;
+                splitSplitString(v[++i], vec);
+//#ifdef debug
+//                assert(vec.size() == train.stationNum - 1);
+//#endif
+                for (int j = 1; j < vec.size()+1; j++) {
+                    train.price[j] = train.price[j - 1] + StringToInt(vec[j - 1]);
+                }
+            } else if (v[i] == "-x") {
+                train.startTime = timeToInt(v[++i]);
+            } else if (v[i] == "-t") {
+                sjtu::vector<std::string> vec;
+                splitSplitString(v[++i], vec);
+//#ifdef debug
+//                assert(vec.size() == train.stationNum - 1);
+//#endif
+                for (int j = 1; j < vec.size()+1; j++) {
+                    train.travelTime[j] = StringToInt(vec[j - 1]);
+                }
+            } else if (v[i] == "-o") {
+                sjtu::vector<std::string> vec;
+                splitSplitString(v[++i], vec);
+//#ifdef debug
+//                assert(vec.size() == train.stationNum - 2);
+//#endif
+                for (int j = 1; j <= vec.size(); j++) {
+                    train.stopoverTime[j] = StringToInt(vec[j - 1]);
+                }
+            } else if (v[i] == "-d") {
+                sjtu::vector<std::string> vec;
+                splitSplitString(v[++i], vec);
+                train.saleDate[0] = dateToInt(vec[0]);
+                train.saleDate[1] = dateToInt(vec[1]);
+            } else if (v[i] == "-y") {
+                train.type = v[++i][0];
+            }
+        }
+        TrainID_ToTrain.insert(TrainIDForBPT(train.trainID), train);
+        std::cout << 0 << std::endl;
+    }
 
-    void deleteTrain(int timestamp, sjtu::vector<std::string> &v) {}
+    void deleteTrain(int timestamp, sjtu::vector<std::string> &v) {
+        std::string *trainID;
+        trainID = &v[1];
+        if (!raw(*trainID)) {
+            std::cout << -1 << std::endl;
+            return;
+        }
+        TrainID_ToTrain.delete_(TrainIDForBPT(*trainID));
+        std::cout << 0 << std::endl;
+    }
 
-    void releaseTrain(int timestamp, sjtu::vector<std::string> &v) {}
+    void releaseTrain(int timestamp, sjtu::vector<std::string> &v) {
+        std::string *trainID;
+        trainID = &v[1];
+        auto vec = TrainID_ToTrain.find3(TrainIDForBPT(*trainID));
+        if (vec.empty() || vec[0].released) {
+            std::cout << -1 << std::endl;
+            return;
+        }
+        Train &train = vec[0];
+        train.released = true;
+        //todo:优化:不删除，只修改！CHANGE TO FUNCTION
+        TrainID_ToTrain.delete_(TrainIDForBPT(*trainID));
+        TrainID_ToTrain.insert(TrainIDForBPT(*trainID), train);
+        std::cout << 0 << std::endl;
+//    BigBlockBpt<TrainIDDateForBPT, releasedTrain> TrainIDDate_ToReleasedTrain;
+//    BigBlockBpt<Station_TrainIDForBPT, TrainForQT> Station_TrainID_ToTrainForQT;
+//    BPT<Station_TrainIDForBPT, TrainForQTOnlyId> Station_TrainID_ToTrainForQTOlyId;
+        releasedTrain rt(train.trainID, train.saleDate[0], train.stationNum, train.stations,
+                         train.startTime, train.travelTime, train.stopoverTime, train.price, train.seatNum, train.type,
+                         timestamp);
+        for (int i = train.saleDate[0]; i <= train.saleDate[1]; ++i) {
+            rt.date = i;
+            TrainIDDate_ToReleasedTrain.insert(TrainIDDateForBPT(*trainID, i), rt);
+        }
 
-    void queryTrain(int timestamp, sjtu::vector<std::string> &v) {}
+        TrainForQT tfq(train.trainID, 0, train.startTime, 0, train.stationNum, train.stations, train.saleDate,
+                       train.travelTime, train.stopoverTime, train.price, train.type);
+        TrainForQTOnlyId tfqoi(train.trainID, 0, train.startTime, 0, train.saleDate);
+        Station_TrainID_ToTrainForQT.insert(Station_TrainIDForBPT(train.stations[0], train.trainID), tfq);
+        Station_TrainID_ToTrainForQTOlyId.insert(Station_TrainIDForBPT(train.stations[0], train.trainID), tfqoi);
+        for (int i = 1; i < tfq.stationNum; ++i) {
+            tfq.nowStation++;
+            tfq.nowTime += tfq.travelTime[i] + tfq.stopoverTime[i - 1];
+            tfq.nowPrice = tfq.price[i];
+            Station_TrainIDForBPT stfb(train.stations[i], train.trainID);
+            Station_TrainID_ToTrainForQT.insert(stfb, tfq);
+            Station_TrainID_ToTrainForQTOlyId.insert(stfb, tfqoi);
+        }
+    }
+
+    void queryTrain(int timestamp, sjtu::vector<std::string> &v) {
+        std::string *trainID;
+        int date;
+        for (int i = 0; i < v.size(); ++i) {
+            if (v[i] == "-i") {
+                trainID = &v[++i];
+            } else if (v[i] == "-d") {
+                date = dateToInt(v[++i]);
+            }
+        }
+        auto vec2 = TrainIDDate_ToReleasedTrain.find3(TrainIDDateForBPT(*trainID, date));
+        if (vec2.empty()) {
+            std::cout << -1 << std::endl;
+            return;
+        }
+        releasedTrain &rt = vec2[0];
+        rt.print();
+    }
 
     void queryTicket(int timestamp, sjtu::vector<std::string> &v) {}
 
@@ -1003,7 +1076,6 @@ public:
         std::cout << "bye" << std::endl;
     }
 
-#endif
 public:
     TicketSystem() : Username_ToUser("Username_ToUser"), Username_ToOrders("Username_ToOrders"),
                      TrainID_ToTrain("TrainID_ToTrain"),
@@ -1011,13 +1083,28 @@ public:
                      Station_TrainID_ToTrainForQT("Station_TrainID_ToTrainForQT"),
                      Station_TrainID_ToTrainForQTOlyId("Station_TrainID_ToTrainForQTOlyID"),
                      TrainIDDate_ToPends("TrainIDDate_ToPends") {
+//        std::cout << "User_Size:  " << sizeof(User) << std::endl <<
+//                  "Train_Size:  " << sizeof(Train) << std::endl <<
+//                  "releasedTrain_Size:  " << sizeof(releasedTrain) << std::endl <<
+//                  "Order_Size:  " << sizeof(Order) << std::endl <<
+//                  "Pend_Size:  " << sizeof(Pend) << std::endl <<
+//                  "LogUser_Size:  " << sizeof(LogUser) << std::endl <<
+//                  "TrainForQT_Size:  " << sizeof(TrainForQT) << std::endl <<
+//                  "TrainForQTOnlyId_Size:  " << sizeof(TrainForQTOnlyId) << std::endl;
+//        std::cout << "keys--------------------" << std::endl;
+//        std::cout << "UsernameForBPT_Size:  " << sizeof(UsernameForBPT) << std::endl <<
+//                  "TrainIDForBPT_Size:  " << sizeof(TrainIDForBPT) << std::endl <<
+//                  "ValForTrainIDDateForBPT_Size:  " << sizeof(ValForTrainIDDateForBPT) << std::endl <<
+//                  "TrainIDDateForBPT_Size:  " << sizeof(TrainIDDateForBPT) << std::endl <<
+//                  "ValForStation_TrainIDForBPT_Size:  " << sizeof(ValForStation_TrainIDForBPT) << std::endl <<
+//                  "Station_TrainIDForBPT_Size:  " << sizeof(Station_TrainIDForBPT) << std::endl;
     }
 
     void run() {
         while (true) {
             std::string timestampStr, cmd;
             std::cin >> timestampStr >> cmd;
-            std::cout<<timestampStr<<' ';
+            std::cout << timestampStr << ' ';
             if (cmd == "clean") {
                 clean();
             }

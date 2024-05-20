@@ -21,10 +21,27 @@ public:
 //};
 
 int main() {
-    freopen("test.out", "w", stdout);
+//    string a;
+//    cin>>a;
+//    vector<string>aa;
+//    splitSplitString(a,aa);
+//    for(auto &i:aa){
+//        cout<<i<<endl;
+//    }
+//    freopen("in","r",stdin);
+//    freopen("test.out", "w", stdout);
 //    A<int> s("jferuhf    ioj");
 //    cout<<s.aaa;
     clearFile();
+//    char a[10]={'a','|',char(0b11100000),'|','|','|','0'};
+//    char a[10]="你好";
+//    char a[10]={-20,-69,-99};
+//    cin>>a;
+//    a[1]=-104;
+//std::cout<<0b11000000<<0b01000000<<endl;
+//std::cout<<a;
+//    std::cout<<a[0]<<a[1]<<a[2]<<std::endl;
+//    exit(0);
 //    std::cout<<0b11111110<<std::endl;
 //    string str,str1;
 //    cin>>str1;
@@ -40,6 +57,10 @@ int main() {
 //    }
     TicketSystem ticketSystem;
     ticketSystem.run();
+//    char *uii[31];
+//    char uoii[199][31];
+//    定义一个指向数组的指针
+//    char (*uoi)[31];
 //    B aa;
 //    aa.b=0;
 //    string s;

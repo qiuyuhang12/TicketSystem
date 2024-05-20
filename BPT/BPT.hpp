@@ -8,6 +8,7 @@
 #include <fstream>
 #include <filesystem>
 #include <cassert>
+#include <utility>
 //#include <vector>//!
 //#include <map>//!
 #include "STLSrc/map.hpp"
@@ -33,9 +34,9 @@ class BPT {
 public:
     std::fstream bptNodes;
     std::fstream bptBlocks;
-    std::string filename="";
-    std::string nodesPath="";
-    std::string blocksPath="";
+    std::string filename = "";
+    std::string nodesPath = "";
+    std::string blocksPath = "";
     ll root = 1e3;
     ll nodeNum = 0;
     ll blockNum = 0;
@@ -56,8 +57,10 @@ public:
     }
 
     static const ll cut = 1e3;
-    static const int M = 4000/sizeof(Key);
-    static const int L = 4000/sizeof(Value);
+    static const int M = 4000 / sizeof(Key);
+    static const int L = 4000 / sizeof(Value) < 8 ? 8 : 4000 / sizeof(Value);
+    static_assert(M >= 8, "M should be larger than 8");
+    static_assert(L >= 8, "L should be larger than 8");
 
     struct node {
         bool isRoot = false;
@@ -948,9 +951,9 @@ public:
     }
 
 public:
-    BPT(std::string filePath):filename(std::move(filePath)){
-        nodesPath= filename + "Nodes";
-        blocksPath= filename + "Blocks";
+    BPT(std::string filePath) : filename(std::move(filePath)) {
+        nodesPath = filename + "Nodes";
+        blocksPath = filename + "Blocks";
         bool flag = false;
         bptNodes.open(nodesPath, std::ios::in | std::ios::out | std::ios::binary);
         bptBlocks.open(blocksPath, std::ios::in | std::ios::out | std::ios::binary);

@@ -14,6 +14,9 @@ add_executable(TicketSystem
         BPT/STLSrc/vector.hpp
         TicketSystem.hpp
         main.cpp
+        StringFunction.hpp
+        BigBlockBpt.hpp
+        DateAndTimeStruct.hpp
 )
 add_executable(code
         BPT/LRU.hpp
@@ -26,4 +29,7 @@ add_executable(code
         BPT/STLSrc/vector.hpp
         TicketSystem.hpp
         main.cpp
+        StringFunction.hpp
+        BigBlockBpt.hpp
+        DateAndTimeStruct.hpp
 )
