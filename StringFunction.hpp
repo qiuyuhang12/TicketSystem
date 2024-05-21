@@ -7,6 +7,11 @@
 
 #include "BPT/BPT.hpp"
 
+enum priority {
+    _price,
+    _time
+};
+
 void splitString(const std::string &str, sjtu::vector<std::string> &res) {
     res.clear();
     std::string tmp;
@@ -221,6 +226,68 @@ void splitSplitString(const std::string &str, std::vector<std::string> &res) {
 }
 #endif
 
+void parserForQT(std::string *&start, std::string *&end, priority &pri, sjtu::vector<std::string> &v, int &date) {
+    for (int i = 0; i < v.size(); ++i) {
+        if (v[i] == "-s") {
+            start = &v[++i];
+        } else if (v[i] == "-t") {
+            end = &v[++i];
+        } else if (v[i] == "-d") {
+            date = dateToInt(v[++i]);
+        } else if (v[i] == "-p") {
+            ++i;
+            if (v[i] == "cost")pri = _price;
+            else if (v[i] == "time") pri = _time;
+            else
+                assert(0);
+        }
+    }
+#ifdef debug
+    assert(start!= nullptr);
+    assert(end!= nullptr);
+    assert(!start->empty());
+    assert(!end->empty());
+#endif
+}
+enum queue {
+    no,
+    yes
+};
+void parserForBuy(std::string *&username, std::string *&trainID, int &date, int &num, std::string *&start, std::string *&to, sjtu::vector<std::string> &v,queue &q) {
+    for (int i = 0; i < v.size(); ++i) {
+        if (v[i] == "-u") {
+            username = &v[++i];
+        } else if (v[i] == "-i") {
+            trainID = &v[++i];
+        } else if (v[i] == "-d") {
+            date = dateToInt(v[++i]);
+        } else if (v[i] == "-n") {
+            num = StringToInt(v[++i]);
+        } else if (v[i] == "-f") {
+            start = &v[++i];
+        } else if (v[i] == "-t") {
+            to = &v[++i];
+        } else if (v[i] == "-q") {
+            ++i;
+            if (v[i] == "true")q=yes;
+            else if (v[i] == "false")q=no;
+            else
+                assert(0);
+        }
+    }
+}
+
+//only one element
+void checkV(auto vec){
+    if (vec.empty()) {
+        std::cout << -1 << std::endl;
+        throw 0;
+//        return;
+    }
+#ifdef debug
+    assert(vec.size() == 1);
+#endif
+}
 //int timeStrToInt(const std::string &str) {
 //    int hh = (str[0] - '0') * 10 + (str[1] - '0');
 //    int mm = (str[3] - '0') * 10 + (str[4] - '0');

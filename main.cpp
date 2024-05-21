@@ -28,11 +28,13 @@ int main() {
 //    for(auto &i:aa){
 //        cout<<i<<endl;
 //    }
-//    freopen("in","r",stdin);
+//    freopen("/run/media/qiuyuhang/data/cpp_file/TicketSystem/myIn","r",stdin);
 //    freopen("test.out", "w", stdout);
 //    A<int> s("jferuhf    ioj");
 //    cout<<s.aaa;
     clearFile();
+    TicketSystem ticketSystem;
+    ticketSystem.run();
 //    char a[10]={'a','|',char(0b11100000),'|','|','|','0'};
 //    char a[10]="你好";
 //    char a[10]={-20,-69,-99};
@@ -55,8 +57,6 @@ int main() {
 //    for (auto &i : v) {
 //        cout << i << endl;
 //    }
-    TicketSystem ticketSystem;
-    ticketSystem.run();
 //    char *uii[31];
 //    char uoii[199][31];
 //    定义一个指向数组的指针

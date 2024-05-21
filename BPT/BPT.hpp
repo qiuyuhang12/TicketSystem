@@ -1113,6 +1113,33 @@ public:
         return ans;
     }
 
+    sjtu::vector<Value> findHard(Key key){
+        sjtu::vector<Value> ans;
+        nodeParent.clear();
+        blockParent.clear();
+        sjtu::vector<ll> rt;
+        rt.push_back(root);
+        sjtu::vector<ll> res=findKeyOnlyOne(key,rt);
+        bool flag=false;
+        for (ll i:res){
+            block *_block;
+            readBlock(i,_block);
+            for (int j = 0; j < _block->size; ++j) {
+                if (equalKey(_block->data[j].key,key)){
+                    flag=true;
+                    ans.push_back(_block->data[j].value);
+                    break;
+                }
+            }
+            if (flag)break;
+        }
+//        if (!flag){
+//            return ans;
+//        }
+        return ans;
+    }
+
+
     ll size_() {
         return size;
     }
