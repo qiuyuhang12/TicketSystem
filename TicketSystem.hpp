@@ -316,7 +316,7 @@ public:
 
         void print() {
             std::cout << trainID << " " << type << std::endl;
-            int time = 0;
+            int time = startTime;
             for (int i = 0; i < stationNum; ++i) {
                 std::cout << stations[i] << " ";
                 if (i == 0) {
@@ -340,7 +340,7 @@ public:
     };
 
     struct Order {
-        int timestamp = 0;//only for debug (createTime)
+        int timestamp = 0;//not only for debug! (createTime)
         char username[21] = {};//not only for debug!
         orderStatus status = success;
         char trainID[21] = {};//unique
@@ -410,11 +410,20 @@ public:
         bool operator<(const Order &other) const {
             return timestamp < other.timestamp;
         }
+
         bool operator==(const Order &other) const {
             return timestamp == other.timestamp;
         }
+
         bool operator!=(const Order &other) const {
             return timestamp != other.timestamp;
+        }
+
+        void print() {
+//一行表示一个订单，格式为 [<STATUS>] <trainID> <FROM> <LEAVING_TIME> -> <TO> <ARRIVING_TIME> <PRICE> <NUM>，其中 <NUM> 为购票数量， <STATUS> 表示该订单的状态，可能的值为：success（购票已成功）、pending（位于候补购票队列中）和 refunded（已经退票）。
+            std::cout << "[" << (status == success ? "success" : (status == pending ? "pending" : "refunded")) << "] "
+                      << trainID << " " << from << " " << IntToDateAndTime(leavingDateAndTime) << " -> "
+                      << to << " " << IntToDateAndTime(arrivingDateAndTime) << " " << price << " " << num << std::endl;
         }
     };
 
@@ -612,24 +621,32 @@ public:
     struct UsernameForBPT {
         char val[21] = {};//unique
         bool isMin = false;
-        char realVal = 0;
+        int realVal = 0;
 
         UsernameForBPT() = default;
 
         explicit UsernameForBPT(const std::string &_username) {
             strcpy(val, _username.c_str());
         }
-        explicit UsernameForBPT(const char* _username) {
+
+        explicit UsernameForBPT(const char *_username) {
             strcpy(val, _username);
+        }
+
+        UsernameForBPT(const char *_username, int real) {
+            strcpy(val, _username);
+            realVal = real;
         }
 
         UsernameForBPT(const UsernameForBPT &other) {
             strcpy(val, other.val);
+            realVal = other.realVal;
         }
 
         UsernameForBPT &operator=(const UsernameForBPT &other) {
             if (this == &other)return *this;
             strcpy(val, other.val);
+            realVal = other.realVal;
             return *this;
         }
 
@@ -723,7 +740,7 @@ public:
     struct TrainIDDateForBPT {
         ValForTrainIDDateForBPT val;
         bool isMin = false;
-        char realVal = 0;
+        int realVal = 0;
 
         TrainIDDateForBPT() = default;
 
@@ -731,11 +748,14 @@ public:
 
         TrainIDDateForBPT(const char *_trainID, int _date) : val(_trainID, _date) {}
 
-        TrainIDDateForBPT(const TrainIDDateForBPT &other) : val(other.val) {}
+        TrainIDDateForBPT(const char *_trainID, int _date, int real) : val(_trainID, _date), realVal(real) {}
+
+        TrainIDDateForBPT(const TrainIDDateForBPT &other) : val(other.val), realVal(other.realVal) {}
 
         TrainIDDateForBPT &operator=(const TrainIDDateForBPT &other) {
             if (this == &other)return *this;
             val = other.val;
+            realVal = other.realVal;
             return *this;
         }
 
@@ -931,13 +951,30 @@ public:
         return UserMap.find(username) != UserMap.end();
     }
 
-    void addOrder(const char *username,const Order& od){
-        Username_ToOrders.insert(UsernameForBPT(username), od);
+    void addOrder(const char *username, const Order &od) {
+        Username_ToOrders.insert(UsernameForBPT(username, od.timestamp), od);
     }
 
-    void Queue(const char *trainID, int date,const Order &od) {
-        TrainIDDate_ToPends.insert(TrainIDDateForBPT(trainID, date), od);
+    void Queue(const char *trainID, int date, const Order &od) {
+        TrainIDDate_ToPends.insert(TrainIDDateForBPT(trainID, date, od.timestamp), od);
     }
+
+    void tryBuy(Order &od, releasedTrain *train) {
+        for (int i = od.fNum; i < od.tNum; ++i) {
+            if (train->restTickets[i] < od.num) {
+                return;
+            }
+        }
+        for (int i = od.fNum; i < od.tNum; ++i) {
+            train->restTickets[i] -= od.num;
+        }
+        //od移除pendlist
+        TrainIDDate_ToPends.delete_(TrainIDDateForBPT(od.trainID, od.dateOfTrain, od.timestamp), od);
+        //改变od在orderlist中的状态
+        od.status = success;
+        Username_ToOrders.change(UsernameForBPT(od.username, od.timestamp), od);
+    }
+
 private://主分支函数
 #ifdef debug
 public:
@@ -1257,7 +1294,10 @@ public:
             if (v[i] == "-i") {
                 trainID = &v[++i];
             } else if (v[i] == "-d") {
-                date = dateToInt(v[++i]);
+                try { date = dateToInt(v[++i]); } catch (int) {
+                    std::cout << -1 << std::endl;
+                    return;
+                }
             }
         }
         auto vec2 = TrainIDDate_ToReleasedTrain.find3(TrainIDDateForBPT(*trainID, date));
@@ -1276,7 +1316,10 @@ public:
         std::string *start = nullptr, *toward = nullptr;
         int date = 0;
         priority pri = _time;
-        parserForQT(start, toward, pri, v, date);
+        try { parserForQT(start, toward, pri, v, date); } catch (int) {
+            std::cout << 0 << std::endl;
+            return;
+        }
         sjtu::vector<TrainForQTOnlyId> sTrains, tTrains;
 #ifdef debug
         sTrains = sjtuVtoStdV(Station_TrainID_ToTrainForQTOlyId.find3(Station_TrainIDForBPT(start->c_str(), "")));
@@ -1327,7 +1370,10 @@ public:
         std::string *username, *trainID, *start, *to;
         int num = 0, date = 0;
         queue q = no;
-        parserForBuy(username, trainID, date, num, start, to, v, q);
+        try { parserForBuy(username, trainID, date, num, start, to, v, q); } catch (int) {
+            std::cout << -1 << std::endl;
+            return;
+        }
         if (!hasLogIn(*username)) {
             std::cout << -1 << std::endl;
             return;
@@ -1343,11 +1389,12 @@ public:
             std::cout << -1 << std::endl;
             return;
         }
+        date -= sbasicInfo[0].nowTime / (24 * 60);
         Order order(username->c_str(), trainID->c_str(), start->c_str(),
                     sbasicInfo[0].nowTime + sbasicInfo[0].thisOver + date * 24 * 60, to->c_str(),
-                    tbasicInfo[0].nowTime + date * 24 * 60, tbasicInfo[0].nowPrice - sbasicInfo[0].nowPrice, num, date,
+                    tbasicInfo[0].nowTime + date * 24 * 60, tbasicInfo[0].nowPrice - sbasicInfo[0].nowPrice, num, 0,
                     sNum, tNum, success, timestamp);
-        date -= sbasicInfo[0].nowTime / (24 * 60);
+        order.dateOfTrain=date;
         auto vec = TrainIDDate_ToReleasedTrain.find3(TrainIDDateForBPT(*trainID, date));
         try { checkV(vec); } catch (int) { return; }
         releasedTrain *rt = &vec[0];
@@ -1373,12 +1420,82 @@ public:
         //输出总价格
         std::cout << (rt->price[tNum] - rt->price[sNum]) * num << std::endl;
         TrainIDDate_ToReleasedTrain.change(TrainIDDateForBPT(*trainID, date), *rt);
-        addOrder(username->c_str(),order);
+        addOrder(username->c_str(), order);
     }
 
-    void queryOrder(int timestamp, sjtu::vector<std::string> &v) {}
+    void queryOrder(int timestamp, sjtu::vector<std::string> &v) {
+        std::string *username = &v[1];
+        if (!hasLogIn(*username)) {
+            std::cout << -1 << std::endl;
+            return;
+        }
+        auto vec = Username_ToOrders.find3(UsernameForBPT(*username));
+        std::cout << vec.size() << std::endl;
+//        for (int i = 0; i < vec.size(); ++i) {
+        for (int i = vec.size() - 1; i >= 0; --i) {
+            vec[i].print();
+        }
+    }
 
-    void refundTicket(int timestamp, sjtu::vector<std::string> &v) {}
+    void refundTicket(int timestamp, sjtu::vector<std::string> &v) {
+        std::string *username;
+        int n = 0;
+        parserForRefund(username, n, v);
+        if (!hasLogIn(*username)) {
+            std::cout << -1 << std::endl;
+            return;
+        }
+        auto vec = Username_ToOrders.find3(UsernameForBPT(*username));
+#ifdef debug
+        //vec的timestamp递增
+        for (int i = 1; i < vec.size(); ++i) {
+            assert(vec[i].timestamp > vec[i - 1].timestamp);
+        }
+#endif
+        if (vec.size() < n) {
+            std::cout << -1 << std::endl;
+            return;
+        }
+        auto &od = vec[n - 1];
+
+        if (od.status == pending) {
+            auto vec2 = TrainIDDate_ToPends.findHard(TrainIDDateForBPT(od.trainID, od.dateOfTrain, od.timestamp));
+            try { checkV(vec2); } catch (int) { return; }
+            TrainIDDate_ToPends.delete_(TrainIDDateForBPT(od.trainID, od.dateOfTrain, od.timestamp), vec2[0]);
+            od.status = refunded;
+            Username_ToOrders.change(UsernameForBPT(username->c_str(), od.timestamp), od);
+            std::cout << 0 << std::endl;
+        } else if (od.status == success) {
+            auto vec2 = TrainIDDate_ToReleasedTrain.find3(TrainIDDateForBPT(od.trainID, od.dateOfTrain));
+            try { checkV(vec2); } catch (int) { return; }
+            releasedTrain *rt = &vec2[0];
+            for (int i = od.fNum; i < od.tNum; ++i) {
+                rt->restTickets[i] += od.num;
+            }
+            auto pds = TrainIDDate_ToPends.find3(TrainIDDateForBPT(od.trainID, od.dateOfTrain));
+#ifdef debug
+            //timestamp 递增
+            for (int i = 1; i < pds.size(); ++i) {
+                assert(pds[i].timestamp > pds[i - 1].timestamp);
+            }
+#endif
+            for (int i = 0; i < pds.size(); ++i) {
+                tryBuy(pds[i], rt);
+            }
+            TrainIDDate_ToReleasedTrain.change(TrainIDDateForBPT(od.trainID, od.dateOfTrain), *rt);
+            od.status = refunded;
+            Username_ToOrders.change(UsernameForBPT(username->c_str(), od.timestamp), od);
+            std::cout << 0 << std::endl;
+        } else if (od.status == refunded) {
+            std::cout << -1 << std::endl;
+            return;
+        }
+//        }
+//        std::cout << sum << std::endl;
+//        for (int i = 0; i < n; ++i) {
+//            Username_ToOrders.delete_(UsernameForBPT(*username), vec[i]);
+//        }
+    }
 
     void clean() {}
 

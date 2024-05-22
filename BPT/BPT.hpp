@@ -1140,6 +1140,33 @@ public:
     }
 
 
+    //必须保证key唯一
+    void change(Key key, Value value) {
+        auto vec= findHard(key);
+        assert(vec.size()==1);
+        delete_(key,vec[0]);
+        insert(key,value);
+//        nodeParent.clear();
+//        blockParent.clear();
+//        sjtu::vector<ll> rt;
+//        rt.push_back(root);
+//        sjtu::vector<ll> res = findKey(key, rt);
+//        bool flag = false;
+//        for (ll i: res) {
+//            block *_block;
+//            readBlock(i, _block);
+//            for (int j = 0; j < _block->size; ++j) {
+//                if (equalK(_block->data[j].key, key)) {
+//                    flag = true;
+//                    _block->data[j].value = value;
+//                    writeBlock(i, _block);
+//                    break;
+//                }
+//            }
+//            if (flag)break;
+//        }
+    }
+
     ll size_() {
         return size;
     }

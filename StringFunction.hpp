@@ -144,6 +144,8 @@ int dateToInt(const std::string &str) {
     if (mm == 6)return dd;
     if (mm == 7)return dd + 30;
     if (mm == 8)return dd + 61;
+    throw 0;
+//    return -1;
 #ifdef debug
     assert(0);
 #endif
@@ -287,6 +289,16 @@ void checkV(auto vec){
 #ifdef debug
     assert(vec.size() == 1);
 #endif
+}
+
+void parserForRefund(std::string *&username, int &num, sjtu::vector<std::string> &v) {
+    for (int i = 0; i < v.size(); ++i) {
+        if (v[i] == "-u") {
+            username = &v[++i];
+        } else if (v[i] == "-n") {
+            num = StringToInt(v[++i]);
+        }
+    }
 }
 //int timeStrToInt(const std::string &str) {
 //    int hh = (str[0] - '0') * 10 + (str[1] - '0');

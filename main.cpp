@@ -28,8 +28,8 @@ int main() {
 //    for(auto &i:aa){
 //        cout<<i<<endl;
 //    }
-//    freopen("/run/media/qiuyuhang/data/cpp_file/TicketSystem/myIn","r",stdin);
-//    freopen("test.out", "w", stdout);
+    freopen("/run/media/qiuyuhang/data/cpp_file/TicketSystem/myIn","r",stdin);
+    freopen("test.out", "w", stdout);
 //    A<int> s("jferuhf    ioj");
 //    cout<<s.aaa;
     clearFile();
