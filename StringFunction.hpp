@@ -144,6 +144,7 @@ int dateToInt(const std::string &str) {
     if (mm == 6)return dd;
     if (mm == 7)return dd + 30;
     if (mm == 8)return dd + 61;
+    if (mm == 9)return dd + 92;
     throw 0;
 //    return -1;
 #ifdef debug

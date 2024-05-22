@@ -228,6 +228,30 @@ public:
         bool operator!=(const Train &other) const {
             return strcmp(trainID, other.trainID) != 0;
         }
+
+        void print(int date) {
+            std::cout << trainID << " " << type << std::endl;
+            int time = startTime;
+            for (int i = 0; i < stationNum; ++i) {
+                std::cout << stations[i] << " ";
+                if (i == 0) {
+                    std::cout << "xx-xx xx:xx -> ";
+                } else {
+                    std::cout << makeDateAndTime(date, time += travelTime[i]) << " -> ";
+                }
+                if (i != stationNum - 1) {
+                    std::cout << makeDateAndTime(date, time += stopoverTime[i]) << " ";
+                } else {
+                    std::cout << "xx-xx xx:xx ";
+                }
+                std::cout << price[i] << " ";
+                if (i == stationNum - 1) {
+                    std::cout << "x" << std::endl;
+                } else {
+                    std::cout << seatNum << std::endl;
+                }
+            }
+        }
     };
 
     struct releasedTrain {//先id序 后time序
@@ -933,7 +957,7 @@ public:
     };
 
     struct String {
-        char str[100]={};
+        char str[100] = {};
 
         String() {}
 
@@ -1061,22 +1085,15 @@ public:
     //date是出发日期
     void queryTicket(const std::string *start, const std::string *toward, int date, int pri,
                      sjtu::vector<TrainForQTOnlyId *> &ans, sjtu::vector<TrainForQTOnlyId *> &ans2,
-                     sjtu::map<int, sjtu::map<String, int> > &costToIndex, sjtu::vector<int> &firstStainDateVec,
+                     sjtu::map<int, sjtu::map<int, sjtu::map<String, int> > > &costToIndex,
+                     sjtu::vector<int> &firstStainDateVec,
                      QT_type type, sjtu::vector<TrainForQTOnlyId> &sTrains, sjtu::vector<TrainForQTOnlyId> &tTrains,
                      int afterTime = 0) {
-//        sjtu::vector<TrainForQTOnlyId> sTrains, tTrains;
-//#ifdef debug
-//        sTrains = sjtuVtoStdV(Station_TrainID_ToTrainForQTOlyId.find3(Station_TrainIDForBPT(start->c_str(), "")));
-//        tTrains = sjtuVtoStdV(Station_TrainID_ToTrainForQTOlyId.find3(Station_TrainIDForBPT(toward->c_str(), "")));
-//#endif
-//#ifndef debug
-//        sTrains=Station_TrainID_ToTrainForQTOlyId.find3(Station_TrainIDForBPT(*start, ""));
-//        tTrains=Station_TrainID_ToTrainForQTOlyId.find3(Station_TrainIDForBPT(*toward, ""));
-//#endif
         if (sTrains.empty() || tTrains.empty()) {
             throw 0;
             return;
         }
+//        sjtu::vector<int> IndexToAnotherCost;
         for (int i = 0; i < sTrains.size(); ++i) {
             int firstStainDate = date - (sTrains[i].nowTime + sTrains[i].thisOver) / (24 * 60);
             if (type == after) {
@@ -1093,11 +1110,18 @@ public:
                         ans.push_back(&sTrains[i]);
                         ans2.push_back(&tTrains[j]);
                         firstStainDateVec.push_back(firstStainDate);
-                        if (pri == _price)
-                            costToIndex[tTrains[j].nowPrice - sTrains[i].nowPrice][sTrains[i].trainID] = ans.size() - 1;
-                        else if (pri == _time)
-                            costToIndex[tTrains[j].nowTime - sTrains[i].nowTime -
-                                        sTrains[i].thisOver][sTrains[i].trainID] = ans.size() - 1;
+                        int price = tTrains[j].nowPrice - sTrains[i].nowPrice;
+                        int time = tTrains[j].nowTime - sTrains[i].nowTime - sTrains[i].thisOver;
+                        char *id = sTrains[i].trainID;
+                        if (pri == _price) {
+                            costToIndex[price][time][id] = ans.size() - 1;
+                        }
+//                            costToIndex[tTrains[j].nowPrice - sTrains[i].nowPrice][sTrains[i].trainID] = ans.size() - 1;
+                        else if (pri == _time) {
+                            costToIndex[time][price][id] = ans.size() - 1;
+                        }
+//                            costToIndex[tTrains[j].nowTime - sTrains[i].nowTime -
+//                                        sTrains[i].thisOver][sTrains[i].trainID] = ans.size() - 1;
                     }
                 }
             }
@@ -1109,11 +1133,11 @@ public:
     }
 
     int getTime(int k, const TrainForQT &train) {
-        int time = 0;
-        for (int i = 0; i <= k; ++i) {
+        int time = train.nowTime;
+        for (int i = train.nowStation + 1; i <= k; ++i) {
             time += train.travelTime[i];
         }
-        for (int i = 0; i < k; ++i) {
+        for (int i = train.nowStation; i < k; ++i) {
             time += train.stopoverTime[i];
         }
         return time;
@@ -1447,7 +1471,14 @@ public:
         }
         auto vec2 = TrainIDDate_ToReleasedTrain.find3(TrainIDDateForBPT(*trainID, date));
         if (vec2.empty()) {
-            std::cout << -1 << std::endl;
+            auto vec3 = TrainID_ToTrain.find3(TrainIDForBPT(*trainID));
+            if (vec3.empty() || vec3[0].saleDate[0] > date || vec3[0].saleDate[1] < date) {
+                std::cout << -1 << std::endl;
+                return;
+            }
+            assert(vec3.size() == 1);
+            Train &train = vec3[0];
+            train.print(date);
             return;
         }
         releasedTrain &rt = vec2[0];
@@ -1469,7 +1500,7 @@ public:
 
         sjtu::vector<TrainForQTOnlyId *> ans, ans2;//ans是出发站车次，ans2是到达站的车次
         sjtu::vector<int> firstStainDateVec;//第一站的发车日期
-        sjtu::map<int, sjtu::map<String, int> > costToIndex;//costToIndex[price][trainID]=index//costToIndex 价格或时间->索引  索引->ans的下标
+        sjtu::map<int, sjtu::map<int, sjtu::map<String, int> > > costToIndex;//costToIndex[price][trainID]=index//costToIndex 价格或时间->索引  索引->ans的下标
 
         sjtu::vector<TrainForQTOnlyId> sTrains, tTrains;
 #ifdef debug
@@ -1491,8 +1522,12 @@ public:
         std::cout << ans.size() << std::endl;
         for (auto iter = costToIndex.begin(); iter != costToIndex.end(); ++iter) {
             for (auto iter2 = iter->second.begin(); iter2 != iter->second.end(); ++iter2) {
-                printTicket(start, toward, ans[iter2->second], ans2[iter2->second], iter2->first.str,
-                            firstStainDateVec[iter2->second]);
+                for (auto iter3 = iter2->second.begin(); iter3 != iter2->second.end(); ++iter3) {
+                    printTicket(start, toward, ans[iter3->second], ans2[iter3->second], iter3->first.str,
+                                firstStainDateVec[iter3->second]);
+                }
+//                printTicket(start, toward, ans[iter2->second], ans2[iter2->second], iter2->first.str,
+//                            firstStainDateVec[iter2->second]);
             }
         }
     }
@@ -1522,7 +1557,7 @@ public:
         TrainForQTOnlyId tranS1, tranS2, toS;
         int firstTrain_firstStainDate = 0;
         int secondTrain_firstStainDate = 0;
-        int cost = 1 << 29;
+        int cost = 1 << 29, secondCost = 1 << 29;
         bool flag = false;
         std::string trans;
         for (int i = 0; i < sTrains.size(); ++i) {
@@ -1538,44 +1573,75 @@ public:
 
                 sjtu::vector<TrainForQTOnlyId *> nd_ans, nd_ans2;//ans是出发站车次，ans2是到达站的车次
                 sjtu::vector<int> nd_firstStainDateVec;//第一站的发车日期
-                sjtu::map<int, sjtu::map<String, int> > nd_costToIndex;//costToIndex[price][trainID]=index//costToIndex 价格或时间->索引  索引->ans的下标
+                sjtu::map<int, sjtu::map<int, sjtu::map<String, int> > > nd_costToIndex;//costToIndex[price][trainID]=index//costToIndex 价格或时间->索引  索引->ans的下标
                 std::string tranStation(sTrains[i].stations[k]);
 
                 sjtu::vector<TrainForQTOnlyId> sTrains2, tTrains2;
 #ifdef debug
                 sTrains2 = sjtuVtoStdV(
-                        Station_TrainID_ToTrainForQTOlyId.find3(Station_TrainIDForBPT(start->c_str(), "")));
+                        Station_TrainID_ToTrainForQTOlyId.find3(Station_TrainIDForBPT(tranStation.c_str(), "")));
                 tTrains2 = sjtuVtoStdV(Station_TrainID_ToTrainForQTOlyId.find3(Station_TrainIDForBPT(to->c_str(), "")));
 #endif
 #ifndef debug
                 sTrains=Station_TrainID_ToTrainForQTOlyId.find3(Station_TrainIDForBPT(*start, ""));
         tTrains=Station_TrainID_ToTrainForQTOlyId.find3(Station_TrainIDForBPT(*toward, ""));
 #endif
-                queryTicket(&tranStation, to, arrive_day1, pri, nd_ans, nd_ans2, nd_costToIndex, nd_firstStainDateVec,
-                            after, sTrains2, tTrains2, arrive_time1);
+                try {
+                    queryTicket(&tranStation, to, arrive_day1, pri, nd_ans, nd_ans2, nd_costToIndex,
+                                nd_firstStainDateVec,
+                                after, sTrains2, tTrains2, arrive_time1);
+                } catch (int) {
+                    continue;
+                }
+
                 for (auto iter: nd_costToIndex) {
                     //如果车次一样就跳过
-                    if (strcmp(sTrains[i].trainID, nd_ans[iter.second.begin()->second]->trainID) == 0)continue;
-                    int nowCost = 0;
+                    if (strcmp(sTrains[i].trainID, nd_ans[iter.second.begin()->second.begin()->second]->trainID) ==
+                        0)
+                        continue;
+                    int nowCost = 0, nowsecondCost = 0;
                     if (pri == _price) {
                         nowCost = sTrains[i].price[k] - sTrains[i].price[sTrains[i].nowStation] +
                                   iter.first;
-                    } else if (pri == _price) {
-                        nowCost = (nd_firstStainDateVec[iter.second.begin()->second] -
+                        nowsecondCost = (nd_firstStainDateVec[iter.second.begin()->second.begin()->second] -
+                                         firstStainDate) * 24 * 60 +
+                                        nd_ans2[iter.second.begin()->second.begin()->second]->nowTime -
+                                        sTrains[i].nowTime;
+                    } else if (pri == _time) {
+                        nowCost = (nd_firstStainDateVec[iter.second.begin()->second.begin()->second] -
                                    firstStainDate) * 24 * 60 +
-                                  nd_ans2[iter.second.begin()->second]->nowTime - sTrains[i].nowTime;
+                                  nd_ans2[iter.second.begin()->second.begin()->second]->nowTime - sTrains[i].nowTime;
+                        nowsecondCost = sTrains[i].price[k] - sTrains[i].price[sTrains[i].nowStation] +
+                                        iter.second.begin()->first;
                     }
-                    if (nowCost < cost) {
+                    bool change = false;
+                    int b1 = nowCost - cost;
+                    if (b1 < 0)change = true;
+                    else if (b1 == 0) {
+                        int b2 = nowsecondCost - secondCost;
+                        if (b2 < 0)change = true;
+                        else if (b2 == 0) {
+                            int b3 = strcmp(sTrains[i].trainID, startS.trainID);
+                            if (b3 < 0)change = true;
+                            else if (b3 == 0) {
+                                int b4 = strcmp(sTrains[i].trainID,
+                                                nd_ans[iter.second.begin()->second.begin()->second]->trainID);
+                                if (b4 < 0)change = true;
+                            }
+                        }
+                    }
+                    if (change) {
                         cost = nowCost;
+                        secondCost = nowsecondCost;
                         startS = sTrains[i];
 //                        TicketSystem::TrainForQTOnlyId::TrainForQTOnlyId(const char *_trainID, int _nowStation, int _nowTime, int _thisOver, int _nowPrice, const int *_saleDate)
                         tranS1 = TrainForQTOnlyId(sTrains[i].trainID, k, getTime(k, sTrains[i]),
-                                                  sTrains[i].thisOver, sTrains[i].nowPrice, sTrains[i].saleDate);
-                        tranS2 = *nd_ans[iter.second.begin()->second];
+                                                  sTrains[i].stopoverTime[k], sTrains[i].price[k], sTrains[i].saleDate);
+                        tranS2 = *nd_ans[iter.second.begin()->second.begin()->second];
                         trans = tranStation;
-                        toS = *nd_ans2[iter.second.begin()->second];
+                        toS = *nd_ans2[iter.second.begin()->second.begin()->second];
                         firstTrain_firstStainDate = firstStainDate;
-                        secondTrain_firstStainDate = nd_firstStainDateVec[iter.second.begin()->second];
+                        secondTrain_firstStainDate = nd_firstStainDateVec[iter.second.begin()->second.begin()->second];
                         cost = nowCost;
                         flag = true;
 #ifdef debug
@@ -1584,7 +1650,7 @@ public:
 //                        assert(*tranS2==*toS);
 #endif
                     }
-                    break;
+//                    break;
                 }
                 arrive_TimeOfFirstTrain += sTrains[i].stopoverTime[k];
             }
@@ -1624,7 +1690,7 @@ public:
             std::cout << -1 << std::endl;
             return;
         }
-        date -= sbasicInfo[0].nowTime / (24 * 60);
+        date -= (sbasicInfo[0].nowTime + sbasicInfo[0].thisOver) / (24 * 60);
         Order order(username->c_str(), trainID->c_str(), start->c_str(),
                     sbasicInfo[0].nowTime + sbasicInfo[0].thisOver + date * 24 * 60, to->c_str(),
                     tbasicInfo[0].nowTime + date * 24 * 60, tbasicInfo[0].nowPrice - sbasicInfo[0].nowPrice, num, 0,
@@ -1691,7 +1757,7 @@ public:
             std::cout << -1 << std::endl;
             return;
         }
-        auto &od = vec[n - 1];
+        auto &od = vec[vec.size() - n];
 
         if (od.status == pending) {
             auto vec2 = TrainIDDate_ToPends.findHard(TrainIDDateForBPT(od.trainID, od.dateOfTrain, od.timestamp));

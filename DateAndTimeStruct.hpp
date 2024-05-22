@@ -4,6 +4,7 @@
 
 #ifndef TICKETSYSTEM_DATEANDTIMESTRUCT_HPP
 #define TICKETSYSTEM_DATEANDTIMESTRUCT_HPP
+
 #include <iostream>
 
 struct Time {//without =
@@ -45,7 +46,8 @@ Date IntToDate(int x) {
 //        x is from june to august
     if (x <= 30) return {6, x};
     if (31 <= x && x <= 61) return {7, x - 30};
-    return {8, x - 61};
+    if (x >= 62 && x <= 92)return {8, x - 61};
+    return {9, x - 92};
 }
 
 DateAndTime IntToDateAndTime(int x) {
@@ -54,18 +56,20 @@ DateAndTime IntToDateAndTime(int x) {
 
 std::ostream &operator<<(std::ostream &os, const Time &time) {
     if (time.hh < 10)os << '0';
-    os << time.hh << ':' ;
+    os << time.hh << ':';
     if (time.mm < 10)os << '0';
-    os<< time.mm;
+    os << time.mm;
     return os;
 }
+
 std::ostream &operator<<(std::ostream &os, const Date &date) {
     if (date.mm < 10)os << '0';
     os << date.mm << '-';
     if (date.dd < 10)os << '0';
-    os<< date.dd;
+    os << date.dd;
     return os;
 }
+
 std::ostream &operator<<(std::ostream &os, const DateAndTime &dateAndTime) {
     os << dateAndTime.date << ' ' << dateAndTime.time;
     return os;
@@ -73,12 +77,13 @@ std::ostream &operator<<(std::ostream &os, const DateAndTime &dateAndTime) {
 
 DateAndTime makeDateAndTime(int day, int time) {
     DateAndTime res;
-    res.time=IntToTime(time);
+    res.time = IntToTime(time);
     if (res.time.hh >= 24) {
-        day+=res.time.hh/24;
+        day += res.time.hh / 24;
         res.time.hh %= 24;
     }
-    res.date=IntToDate(day);
+    res.date = IntToDate(day);
     return res;
 }
+
 #endif //TICKETSYSTEM_DATEANDTIMESTRUCT_HPP

@@ -18,18 +18,18 @@ add_executable(TicketSystem
         BigBlockBpt.hpp
         DateAndTimeStruct.hpp
 )
-add_executable(code
-        BPT/LRU.hpp
-        BPT/BPT.hpp
-        BPT/STLSrc/exceptions.hpp
-        BPT/STLSrc/map.hpp
-        BPT/STLSrc/my_print.hpp
-        BPT/STLSrc/my_sort.hpp
-        BPT/STLSrc/utility.hpp
-        BPT/STLSrc/vector.hpp
-        TicketSystem.hpp
-        main.cpp
-        StringFunction.hpp
-        BigBlockBpt.hpp
-        DateAndTimeStruct.hpp
-)
+#add_executable(code
+#        BPT/LRU.hpp
+#        BPT/BPT.hpp
+#        BPT/STLSrc/exceptions.hpp
+#        BPT/STLSrc/map.hpp
+#        BPT/STLSrc/my_print.hpp
+#        BPT/STLSrc/my_sort.hpp
+#        BPT/STLSrc/utility.hpp
+#        BPT/STLSrc/vector.hpp
+#        TicketSystem.hpp
+#        main.cpp
+#        StringFunction.hpp
+#        BigBlockBpt.hpp
+#        DateAndTimeStruct.hpp
+#)
