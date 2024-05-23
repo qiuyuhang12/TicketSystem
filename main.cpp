@@ -21,6 +21,12 @@ public:
 //};
 
 int main() {
+//    关同步流
+    ios::sync_with_stdio(false);
+//    关缓冲区
+    cin.tie(0);
+    cout.tie(0);
+
 //    string a;
 //    cin>>a;
 //    vector<string>aa;
@@ -32,7 +38,7 @@ int main() {
 //    freopen("test.out", "w", stdout);
 //    A<int> s("jferuhf    ioj");
 //    cout<<s.aaa;
-    clearFile();
+//    clearFile();
     TicketSystem ticketSystem;
     ticketSystem.run();
 //    char a[10]={'a','|',char(0b11100000),'|','|','|','0'};
