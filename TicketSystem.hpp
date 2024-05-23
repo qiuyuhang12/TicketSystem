@@ -472,6 +472,7 @@ public:
         int privilege = 0;
     };
 
+    class TrainForQTOnlyId;
     //注意换乘排除同一辆车
     struct TrainForQT {//time序
         char trainID[21] = {};//unique
@@ -569,6 +570,31 @@ public:
             type = other.type;
         }
 
+        TrainForQT(const Train &other,const TrainForQTOnlyId&other2){
+            strcpy(trainID, other.trainID);
+            nowStation = other2.nowStation;
+            nowTime = other2.nowTime;
+            thisOver = other2.thisOver;
+            nowPrice = other2.nowPrice;
+            stationNum = other.stationNum;
+            for (int i = 0; i < stationNum; i++) {
+                strcpy(stations[i], other.stations[i]);
+            }
+            for (int i = 0; i < 2; i++) {
+                saleDate[i] = other.saleDate[i];
+            }
+            for (int i = 0; i < stationNum; i++) {
+                travelTime[i] = other.travelTime[i];
+            }
+            for (int i = 0; i < stationNum; i++) {
+                stopoverTime[i] = other.stopoverTime[i];
+            }
+            for (int i = 0; i < stationNum; i++) {
+                price[i] = other.price[i];
+            }
+            type = other.type;
+        }
+
         bool operator<(const TrainForQT &other) const {
             //1 stations[nowStation] < other.station[nowStation],2 Date[0] , 3Date[1],4 trainid
             int flag = strcmp(stations[nowStation], other.stations[other.nowStation]);
@@ -583,7 +609,8 @@ public:
         }
     };
 
-    struct TrainForQTOnlyId {
+    class TrainForQTOnlyId {
+    public:
         //可以删除TRAINID
         char trainID[21] = {};//unique
         int nowStation = 0;//是第几站（0为始发站）
@@ -919,7 +946,7 @@ public:
 
     BigBlockBpt<TrainIDForBPT, Train> TrainID_ToTrain;
     BPT<TrainIDDateForBPT, releasedTrain> TrainIDDate_ToReleasedTrain;
-    BigBlockBpt<Station_TrainIDForBPT, TrainForQT> Station_TrainID_ToTrainForQT;
+//    BigBlockBpt<Station_TrainIDForBPT, TrainForQT> Station_TrainID_ToTrainForQT;
     BPT<Station_TrainIDForBPT, TrainForQTOnlyId> Station_TrainID_ToTrainForQTOlyId;
     BPT<TrainIDDateForBPT, Order> TrainIDDate_ToPends;
     BPT<UsernameForBPT, Order> Username_ToOrders;
@@ -1461,7 +1488,7 @@ public:
         TrainForQT tfq(train.trainID, 0, train.startTime, 0, train.stationNum, train.stations, train.saleDate,
                        train.travelTime, train.stopoverTime, train.price, train.type, 0);
         TrainForQTOnlyId tfqoi(train.trainID, 0, train.startTime, train.stopoverTime[0], 0, train.saleDate);
-        Station_TrainID_ToTrainForQT.insert(Station_TrainIDForBPT(train.stations[0], train.trainID), tfq);
+//        Station_TrainID_ToTrainForQT.insert(Station_TrainIDForBPT(train.stations[0], train.trainID), tfq);
         Station_TrainID_ToTrainForQTOlyId.insert(Station_TrainIDForBPT(train.stations[0], train.trainID), tfqoi);
         for (int i = 1; i < tfq.stationNum; ++i) {
             tfq.nowStation++;
@@ -1473,7 +1500,7 @@ public:
             tfqoi.nowPrice = tfq.price[i];
             tfqoi.thisOver = tfq.stopoverTime[i];
             Station_TrainIDForBPT stfb(train.stations[i], train.trainID);
-            Station_TrainID_ToTrainForQT.insert(stfb, tfq);
+//            Station_TrainID_ToTrainForQT.insert(stfb, tfq);
             Station_TrainID_ToTrainForQTOlyId.insert(stfb, tfqoi);
         }
     }
@@ -1567,8 +1594,18 @@ public:
             std::cout << 0 << std::endl;
             return;
         }
-        sjtu::vector<TrainForQT> sTrains = Station_TrainID_ToTrainForQT.find3(
-                Station_TrainIDForBPT(start->c_str(), ""));
+        auto tempe=Station_TrainID_ToTrainForQTOlyId.find3(Station_TrainIDForBPT(start->c_str(), ""));
+
+        sjtu::vector<TrainForQT> sTrains;
+        for (auto &i:tempe) {
+            auto temp=TrainID_ToTrain.find3(TrainIDForBPT(i.trainID));
+#ifdef debug
+            assert(temp.size()==1);
+#endif
+            sTrains.emplace_back(TrainForQT(temp[0],i));
+        }
+//        = Station_TrainID_ToTrainForQT.find3(
+//                Station_TrainIDForBPT(start->c_str(), ""));
         sjtu::vector<TrainForQTOnlyId> tTrains;
 #ifdef debug
         tTrains = sjtuVtoStdV(Station_TrainID_ToTrainForQTOlyId.find3(Station_TrainIDForBPT(to->c_str(), "")));
@@ -1869,7 +1906,7 @@ public:
     TicketSystem() : Username_ToUser("Username_ToUser"), Username_ToOrders("Username_ToOrders"),
                      TrainID_ToTrain("TrainID_ToTrain"),
                      TrainIDDate_ToReleasedTrain("TrainIDDate_ToReleasedTrain"),
-                     Station_TrainID_ToTrainForQT("Station_TrainID_ToTrainForQT"),
+//                     Station_TrainID_ToTrainForQT("Station_TrainID_ToTrainForQT"),
                      Station_TrainID_ToTrainForQTOlyId("Station_TrainID_ToTrainForQTOlyID"),
                      TrainIDDate_ToPends("TrainIDDate_ToPends") {
 //        std::cout << "User_Size:  " << sizeof(User) << std::endl <<
