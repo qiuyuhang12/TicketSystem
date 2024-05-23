@@ -1337,7 +1337,7 @@ private://主分支函数
 
     void login(int timestamp, sjtu::vector<std::string> &v) {
         LogUser logUser;
-        logUser.timestamp = timestamp;
+//        logUser.timestamp = timestamp;
         char *truePsw;
         std::string *Psw, username;
         sjtu::vector<User> vec;
