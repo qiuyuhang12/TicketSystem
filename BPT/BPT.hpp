@@ -15,7 +15,8 @@
 #include "STLSrc/vector.hpp"
 #include "LRU.hpp"
 
-#define ll long long
+//#define ll long long
+#define ll int
 
 //template<typename hasher>
 //static constexpr bool isMyHasher = requires() {
@@ -57,8 +58,10 @@ public:
     }
 
     static const ll cut = 1e3;
-    static const int M = 4000 / sizeof(Key);
-    static const int L = (4000 / sizeof(Value) < 8 ? 8 : 4000 / sizeof(Value))==9?8:(4000 / sizeof(Value) < 8 ? 8 : 4000 / sizeof(Value));
+    static const int M = 4000 / (sizeof(Key) + 4);
+    static const int L =
+            (4000 / (sizeof(Value) + sizeof(Key) + 1) < 8 ? 8 : 4000 / (sizeof(Value) + sizeof(Key) + 1)) == 9 ? 8 : (
+                    4000 / (sizeof(Value) + sizeof(Key) + 1) < 8 ? 8 : 4000 / (sizeof(Value) + sizeof(Key)+1));
     static_assert(M >= 8, "M should be larger than 8");
     static_assert(L >= 8, "L should be larger than 8");
 
@@ -720,8 +723,8 @@ public:
         sjtu::vector<ll> res;
         node *nd = nullptr;
 //        for (ll i: vec) {
-        for (ll i0=0; i0<vec.size();++i0) {
-            ll i=vec[i0];
+        for (ll i0 = 0; i0 < vec.size(); ++i0) {
+            ll i = vec[i0];
             readNode(i, nd);
             for (int j = 0; j < nd->size; ++j) {
                 if (!compK(key, nd->key[j]) && !compK(nd->key[j + 1], key)) {
@@ -747,8 +750,8 @@ public:
         sjtu::vector<ll> res;
         node *nd = nullptr;
 //        for (ll i: vec) {
-        for (ll i0=0; i0<vec.size();++i0) {
-            ll i=vec[i0];
+        for (ll i0 = 0; i0 < vec.size(); ++i0) {
+            ll i = vec[i0];
             readNode(i, nd);
             for (int j = 0; j < nd->size; ++j) {
 //                if (!compK(key,nd->key[j])&&!compK(nd->key[j+1],key)){
@@ -777,8 +780,8 @@ public:
         sjtu::vector<ll> res = findKeyOnlyOne(key, rt);
         Pair p(key, value);
         //        for (ll i: res) {
-        for (ll i0=0; i0<res.size();++i0) {
-            ll i=res[i0];
+        for (ll i0 = 0; i0 < res.size(); ++i0) {
+            ll i = res[i0];
             block *_block = nullptr;
             readBlock(i, _block);
             if (compKV(p, _block->data[0])) {
@@ -957,8 +960,72 @@ public:
     }
 
 public:
-    BPT()=delete;
-    BPT(std::string filePath,int ln,int lb) : filename(std::move(filePath)),lruBlock(lb),lruNode(ln){
+    BPT() = delete;
+
+    BPT(std::string filePath, int ln, int lb) : filename(std::move(filePath)), lruBlock(lb), lruNode(ln) {
+//        std::cout << filePath << ":" << lruNode.LinkCapacity << ' ' << lruBlock.LinkCapacity << std::endl
+//                  << sizeof(node) << ' ' << sizeof(block) << ' ' << M << ' ' << L << ' ' << std::endl;
+        nodesPath = filename + "Nodes";
+        blocksPath = filename + "Blocks";
+        bool flag = false;
+        bptNodes.open(nodesPath, std::ios::in | std::ios::out | std::ios::binary);
+        bptBlocks.open(blocksPath, std::ios::in | std::ios::out | std::ios::binary);
+        if (!bptNodes) {
+            bptNodes.open(nodesPath, std::ios::out | std::ios::binary);
+            bptNodes.close();
+            bptNodes.open(nodesPath, std::ios::in | std::ios::out | std::ios::binary);
+            node *_Root = new node(true, true, 0, 0);
+            writeNodeToEnd(_Root);
+            nodeNum = 1;
+            flag = true;
+            assert(!bptBlocks);
+        }
+        if (!bptBlocks) {
+            bptBlocks.open(blocksPath, std::ios::out | std::ios::binary);
+            bptBlocks.close();
+            bptBlocks.open(blocksPath, std::ios::in | std::ios::out | std::ios::binary);
+            block *_block = new block(1, -1, -1, NodesFileEnd - sizeof(node));
+            _block->data[0].key.isMin = true;
+            writeBlockToEnd(_block);
+            blockNum = 1;
+        }
+        if (!bptNodes || !bptBlocks) {
+            std::cerr << "Error: Cannot open file.\n";
+            exit(1);
+        }
+        if (flag) {
+            lruNode.enableFile(nodesPath);
+            lruBlock.enableFile(blocksPath);
+            return;
+        }
+        bptNodes.seekg(0);
+        bptNodes.read(reinterpret_cast<char *>(&root), sizeof(ll));
+        bptNodes.read(reinterpret_cast<char *>(&nodeNum), sizeof(ll));
+        bptNodes.read(reinterpret_cast<char *>(&blockNum), sizeof(ll));
+        bptNodes.read(reinterpret_cast<char *>(&NodesFileEnd), sizeof(ll));
+        bptNodes.read(reinterpret_cast<char *>(&BlocksFileEnd), sizeof(ll));
+        bptNodes.read(reinterpret_cast<char *>(&size), sizeof(ll));
+        lruNode.enableFile(nodesPath);
+        lruBlock.enableFile(blocksPath);
+    }
+
+    BPT(std::string filePath, int dataNum) : filename(std::move(filePath)), lruBlock(5 + dataNum / ((4000 /
+                                                                                                     (sizeof(Value) +
+                                                                                                      sizeof(Key)+1) < 8
+                                                                                                     ? 8 : 4000 /
+                                                                                                           (sizeof(Value)+
+                                                                                                            sizeof(Key)+1)) ==
+                                                                                                    9 ? 8 : (4000 /
+                                                                                                             (sizeof(Value) +
+                                                                                                              sizeof(Key)+1) <
+                                                                                                             8 ? 8 :
+                                                                                                             4000 /
+                                                                                                             (sizeof(Value) +
+                                                                                                              sizeof(Key)+1)))),
+                                             lruNode(5 + dataNum / 4000 * (sizeof(Key) + 4)) {
+//        输出lrulimit
+//        std::cout << filePath << ":" << lruNode.LinkCapacity << ' ' << lruBlock.LinkCapacity << std::endl
+//                  << sizeof(node) << ' ' << sizeof(block) << ' ' << M << ' ' << L << ' ' << std::endl;
         nodesPath = filename + "Nodes";
         blocksPath = filename + "Blocks";
         bool flag = false;
@@ -1053,8 +1120,8 @@ public:
         sjtu::vector<ll> res = findKey(key, rt);
         bool flag = false;
         //        for (ll i: res) {
-        for (ll i0=0; i0<res.size();++i0) {
-            ll i=res[i0];
+        for (ll i0 = 0; i0 < res.size(); ++i0) {
+            ll i = res[i0];
             block *_block;
             readBlock(i, _block);
             for (int j = 0; j < _block->size; ++j) {
@@ -1082,8 +1149,8 @@ public:
         sjtu::vector<ll> res = findKey(key, rt);
         bool flag = false;
         //        for (ll i: res) {
-        for (ll i0=0; i0<res.size();++i0) {
-            ll i=res[i0];
+        for (ll i0 = 0; i0 < res.size(); ++i0) {
+            ll i = res[i0];
             block *_block;
             readBlock(i, _block);
             for (int j = 0; j < _block->size; ++j) {
@@ -1109,8 +1176,8 @@ public:
         sjtu::vector<ll> res = findKey(key, rt);
         bool flag = false;
         //        for (ll i: res) {
-        for (ll i0=0; i0<res.size();++i0) {
-            ll i=res[i0];
+        for (ll i0 = 0; i0 < res.size(); ++i0) {
+            ll i = res[i0];
             block *_block;
             readBlock(i, _block);
             for (int j = 0; j < _block->size; ++j) {
@@ -1126,22 +1193,22 @@ public:
         return ans;
     }
 
-    sjtu::vector<Value> findHard(Key key){
+    sjtu::vector<Value> findHard(Key key) {
         sjtu::vector<Value> ans;
         nodeParent.clear();
         blockParent.clear();
         sjtu::vector<ll> rt;
         rt.push_back(root);
-        sjtu::vector<ll> res=findKeyOnlyOne(key,rt);
-        bool flag=false;
+        sjtu::vector<ll> res = findKeyOnlyOne(key, rt);
+        bool flag = false;
 //        for (ll i: res) {
-        for (ll i0=0; i0<res.size();++i0) {
-            ll i=res[i0];
+        for (ll i0 = 0; i0 < res.size(); ++i0) {
+            ll i = res[i0];
             block *_block;
-            readBlock(i,_block);
+            readBlock(i, _block);
             for (int j = 0; j < _block->size; ++j) {
-                if (equalKey(_block->data[j].key,key)){
-                    flag=true;
+                if (equalKey(_block->data[j].key, key)) {
+                    flag = true;
                     ans.push_back(_block->data[j].value);
                     break;
                 }
@@ -1157,10 +1224,10 @@ public:
 
     //必须保证key唯一
     void change(Key key, Value value) {
-        auto vec= findHard(key);
-        assert(vec.size()==1);
-        delete_(key,vec[0]);
-        insert(key,value);
+        auto vec = findHard(key);
+        assert(vec.size() == 1);
+        delete_(key, vec[0]);
+        insert(key, value);
 //        nodeParent.clear();
 //        blockParent.clear();
 //        sjtu::vector<ll> rt;

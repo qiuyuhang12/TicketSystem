@@ -52,6 +52,24 @@ public:
         file.read(reinterpret_cast<char *>(&endOfFile), sizeof(endOfFile));
     }
 
+    BigBlockBpt(const std::string &_filePath,int num) : filePath(_filePath), bpt(_filePath,num) {
+        file.open(filePath, std::ios::in | std::ios::out | std::ios::binary);
+        if (!file) {
+            file.open(filePath, std::ios::out | std::ios::binary);
+            file.close();
+            file.open(filePath, std::ios::in | std::ios::out | std::ios::binary);
+            return;
+        }
+        if (!file) {
+            std::cerr << "open file failed" << std::endl;
+            assert(0);
+        }
+        file.seekg(0, std::ios::beg);
+        file.read(reinterpret_cast<char *>(&size), sizeof(size));
+        file.read(reinterpret_cast<char *>(&endOfFile), sizeof(endOfFile));
+    }
+
+
     ~BigBlockBpt() {
         file.seekp(0, std::ios::beg);
         file.write(reinterpret_cast<char *>(&size), sizeof(int));

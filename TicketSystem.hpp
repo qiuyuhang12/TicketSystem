@@ -2010,12 +2010,12 @@ private://主分支函数
     }
 
 public:
-    TicketSystem() : Username_ToUser("Username_ToUser",75,290), Username_ToOrders("Username_ToOrders",75,290),
-                     TrainID_ToTrain("TrainID_ToTrain",60,15),
-                     TrainIDDate_ToReleasedTrain("TrainIDDate_ToReleasedTrain",95,20),
+    TicketSystem() : Username_ToUser("Username_ToUser",10000), Username_ToOrders("Username_ToOrders",10000),
+                     TrainID_ToTrain("TrainID_ToTrain",10000),
+                     TrainIDDate_ToReleasedTrain("TrainIDDate_ToReleasedTrain",100,20),
 //                     Station_TrainID_ToTrainForQT("Station_TrainID_ToTrainForQT"),
-                     Station_TrainID_ToTrainForQTOlyId("Station_TrainID_ToTrainForQTOlyID",135,20),
-                     TrainIDDate_ToPends("TrainIDDate_ToPends",95,20) {
+                     Station_TrainID_ToTrainForQTOlyId("Station_TrainID_ToTrainForQTOlyID",100,20),
+                     TrainIDDate_ToPends("TrainIDDate_ToPends",100,20) {
 //        std::cout << "User_Size:  " << sizeof(User) << std::endl <<
 //                  "Train_Size:  " << sizeof(Train) << std::endl <<
 //                  "releasedTrain_Size:  " << sizeof(releasedTrain) << std::endl <<
