@@ -81,8 +81,9 @@ public:
         sjtu::vector<Value> rsl;
         if (size==0)return rsl;
         auto pos = bpt.find3(key);
-        for (auto &i: pos) {
-            rsl.push_back(getValue(i));
+//        for (auto &i: pos) {
+        for (ll i0=0; i0<pos.size();++i0) {
+            rsl.push_back(getValue(pos[i0]));
         }
         return rsl;
     }

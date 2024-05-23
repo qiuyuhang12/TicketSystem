@@ -3,16 +3,16 @@
 #include <utility>
 #include "TicketSystem.hpp"
 //#define aaa
-using namespace std;
-
-template<typename aaaaa>
-class A {
-private:
-public:
-    string aaa;
-public:
-    A(std::string  filePath) : aaa(std::move(filePath)) {}
-};
+//using namespace std;
+//
+//template<typename aaaaa>
+//class A {
+//private:
+//public:
+//    string aaa;
+//public:
+//    A(std::string  filePath) : aaa(std::move(filePath)) {}
+//};
 //class B : public A {
 //public:
 //#ifdef aaa
@@ -22,10 +22,10 @@ public:
 
 int main() {
 //    关同步流
-    ios::sync_with_stdio(false);
+//    ios::sync_with_stdio(false);
 //    关缓冲区
-    cin.tie(0);
-    cout.tie(0);
+//    cin.tie(0);
+//    cout.tie(0);
 
 //    string a;
 //    cin>>a;

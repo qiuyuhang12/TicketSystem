@@ -719,7 +719,9 @@ public:
         assert(!vec.empty());
         sjtu::vector<ll> res;
         node *nd = nullptr;
-        for (ll i: vec) {
+//        for (ll i: vec) {
+        for (ll i0=0; i0<vec.size();++i0) {
+            ll i=vec[i0];
             readNode(i, nd);
             for (int j = 0; j < nd->size; ++j) {
                 if (!compK(key, nd->key[j]) && !compK(nd->key[j + 1], key)) {
@@ -744,7 +746,9 @@ public:
         assert(!vec.empty());
         sjtu::vector<ll> res;
         node *nd = nullptr;
-        for (ll i: vec) {
+//        for (ll i: vec) {
+        for (ll i0=0; i0<vec.size();++i0) {
+            ll i=vec[i0];
             readNode(i, nd);
             for (int j = 0; j < nd->size; ++j) {
 //                if (!compK(key,nd->key[j])&&!compK(nd->key[j+1],key)){
@@ -772,7 +776,9 @@ public:
         rt.push_back(root);
         sjtu::vector<ll> res = findKeyOnlyOne(key, rt);
         Pair p(key, value);
-        for (ll i: res) {
+        //        for (ll i: res) {
+        for (ll i0=0; i0<res.size();++i0) {
+            ll i=res[i0];
             block *_block = nullptr;
             readBlock(i, _block);
             if (compKV(p, _block->data[0])) {
@@ -1045,7 +1051,9 @@ public:
         rt.push_back(root);
         sjtu::vector<ll> res = findKey(key, rt);
         bool flag = false;
-        for (ll i: res) {
+        //        for (ll i: res) {
+        for (ll i0=0; i0<res.size();++i0) {
+            ll i=res[i0];
             block *_block;
             readBlock(i, _block);
             for (int j = 0; j < _block->size; ++j) {
@@ -1072,7 +1080,9 @@ public:
         rt.push_back(root);
         sjtu::vector<ll> res = findKey(key, rt);
         bool flag = false;
-        for (ll i: res) {
+        //        for (ll i: res) {
+        for (ll i0=0; i0<res.size();++i0) {
+            ll i=res[i0];
             block *_block;
             readBlock(i, _block);
             for (int j = 0; j < _block->size; ++j) {
@@ -1097,7 +1107,9 @@ public:
         rt.push_back(root);
         sjtu::vector<ll> res = findKey(key, rt);
         bool flag = false;
-        for (ll i: res) {
+        //        for (ll i: res) {
+        for (ll i0=0; i0<res.size();++i0) {
+            ll i=res[i0];
             block *_block;
             readBlock(i, _block);
             for (int j = 0; j < _block->size; ++j) {
@@ -1121,7 +1133,9 @@ public:
         rt.push_back(root);
         sjtu::vector<ll> res=findKeyOnlyOne(key,rt);
         bool flag=false;
-        for (ll i:res){
+//        for (ll i: res) {
+        for (ll i0=0; i0<res.size();++i0) {
+            ll i=res[i0];
             block *_block;
             readBlock(i,_block);
             for (int j = 0; j < _block->size; ++j) {
@@ -1152,7 +1166,9 @@ public:
 //        rt.push_back(root);
 //        sjtu::vector<ll> res = findKey(key, rt);
 //        bool flag = false;
-//        for (ll i: res) {
+//        //        for (ll i: res) {
+//        for (ll i0=0; i0<res.size();++i0) {
+//            ll i=res[i0];
 //            block *_block;
 //            readBlock(i, _block);
 //            for (int j = 0; j < _block->size; ++j) {
