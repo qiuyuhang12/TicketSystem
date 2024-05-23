@@ -22,10 +22,10 @@
 
 int main() {
 //    关同步流
-//    ios::sync_with_stdio(false);
+    std::ios::sync_with_stdio(false);
 //    关缓冲区
-//    cin.tie(0);
-//    cout.tie(0);
+    std::cin.tie(0);
+    std::cout.tie(0);
 
 //    string a;
 //    cin>>a;
