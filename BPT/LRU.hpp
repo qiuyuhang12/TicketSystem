@@ -26,15 +26,15 @@ template<typename Hash, typename Key>
 concept Hashable = requires(Key key){
     { Hash()(key) }->std::same_as<size_t>;
 };
-static const int TableCapacity = 100;//!2
-static const int LinkCapacity = 120;//!2
+const int TableCapacity = 300;//!2
+
 template<typename Key, typename Block, Hashable<Key> Hash>
 class LRU {
 //private:
 public:
     size_t size = 0;
     std::fstream file;
-
+    const int LinkCapacity = 120;//!2
     class HashNode;
 
     struct DataNode {
@@ -136,7 +136,8 @@ public:
     }
 
 public:
-    LRU() {
+    LRU()=delete;
+    LRU(int linkCapacity) : LinkCapacity(linkCapacity){
         head = new DataNode();
         tail = new DataNode();
         head->next = tail;

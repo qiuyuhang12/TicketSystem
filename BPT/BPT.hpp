@@ -957,7 +957,8 @@ public:
     }
 
 public:
-    BPT(std::string filePath) : filename(std::move(filePath)) {
+    BPT()=delete;
+    BPT(std::string filePath,int ln,int lb) : filename(std::move(filePath)),lruBlock(lb),lruNode(ln){
         nodesPath = filename + "Nodes";
         blocksPath = filename + "Blocks";
         bool flag = false;

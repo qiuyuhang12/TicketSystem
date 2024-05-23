@@ -35,7 +35,7 @@ public:
 public:
     BigBlockBpt() = delete;
 
-    BigBlockBpt(const std::string &_filePath) : filePath(_filePath), bpt(_filePath) {
+    BigBlockBpt(const std::string &_filePath,int ln,int lb) : filePath(_filePath), bpt(_filePath,ln,lb) {
         file.open(filePath, std::ios::in | std::ios::out | std::ios::binary);
         if (!file) {
             file.open(filePath, std::ios::out | std::ios::binary);

@@ -977,14 +977,14 @@ private://basic data structure
     };
 
     sjtu::map<std::string, LogUser> UserMap;
-    BPT<UsernameForBPT, User> Username_ToUser;
+    BPT<UsernameForBPT, User> Username_ToUser;//28(key) 112(value) 10000(数据量) 读SF
 
-    BigBlockBpt<TrainIDForBPT, Train> TrainID_ToTrain;
-    BPT<TrainIDDateForBPT, releasedTrain> TrainIDDate_ToReleasedTrain;
+    BigBlockBpt<TrainIDForBPT, Train> TrainID_ToTrain;//23 10000 读SF
+    BPT<TrainIDDateForBPT, releasedTrain> TrainIDDate_ToReleasedTrain;//36 10000*90 读写SF
 //    BigBlockBpt<Station_TrainIDForBPT, TrainForQT> Station_TrainID_ToTrainForQT;
-    BPT<Station_TrainIDForBPT, TrainForQTOnlyId> Station_TrainID_ToTrainForQTOlyId;
-    BPT<TrainIDDateForBPT, Order> TrainIDDate_ToPends;
-    BPT<UsernameForBPT, Order> Username_ToOrders;
+    BPT<Station_TrainIDForBPT, TrainForQTOnlyId> Station_TrainID_ToTrainForQTOlyId;//53 10000*90*100 读SF
+    BPT<TrainIDDateForBPT, Order> TrainIDDate_ToPends;//36 1000000
+    BPT<UsernameForBPT, Order> Username_ToOrders;//28 1000000 读F 写SF
 
     struct IntAndString {
         int num;
@@ -2010,12 +2010,12 @@ private://主分支函数
     }
 
 public:
-    TicketSystem() : Username_ToUser("Username_ToUser"), Username_ToOrders("Username_ToOrders"),
-                     TrainID_ToTrain("TrainID_ToTrain"),
-                     TrainIDDate_ToReleasedTrain("TrainIDDate_ToReleasedTrain"),
+    TicketSystem() : Username_ToUser("Username_ToUser",75,290), Username_ToOrders("Username_ToOrders",75,290),
+                     TrainID_ToTrain("TrainID_ToTrain",60,15),
+                     TrainIDDate_ToReleasedTrain("TrainIDDate_ToReleasedTrain",95,20),
 //                     Station_TrainID_ToTrainForQT("Station_TrainID_ToTrainForQT"),
-                     Station_TrainID_ToTrainForQTOlyId("Station_TrainID_ToTrainForQTOlyID"),
-                     TrainIDDate_ToPends("TrainIDDate_ToPends") {
+                     Station_TrainID_ToTrainForQTOlyId("Station_TrainID_ToTrainForQTOlyID",135,20),
+                     TrainIDDate_ToPends("TrainIDDate_ToPends",95,20) {
 //        std::cout << "User_Size:  " << sizeof(User) << std::endl <<
 //                  "Train_Size:  " << sizeof(Train) << std::endl <<
 //                  "releasedTrain_Size:  " << sizeof(releasedTrain) << std::endl <<
