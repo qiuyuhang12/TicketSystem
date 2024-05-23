@@ -7,6 +7,8 @@
 //#define debug
 
 #include "BPT/BPT.hpp"
+#include "HashBPT.hpp"
+#include "BigBlockBpt.hpp"
 
 #ifdef debug
 
@@ -29,7 +31,6 @@ std::vector<T> sjtuVtoStdV(const sjtu::vector<T> &v) {
 
 #endif
 
-#include "BigBlockBpt.hpp"
 #include "StringFunction.hpp"
 #include "DateAndTimeStruct.hpp"
 
@@ -257,9 +258,12 @@ private://basic data structure
         }
     };
 
+//#define cutRelease
     struct releasedTrain {//先id序 后time序
         int timestamp = 0;//only for debug (releaseTime)
+#ifndef cutRelease
         char trainID[21] = {};//unique
+#endif
         int date = 0;
         int stationNum = 0;
 //        char stations[101][31] = {};//0为始发站
@@ -280,7 +284,9 @@ private://basic data structure
 //                      const int *_price,
                       int _seatNum, char _type,
                       int _timestamp = 0) : timestamp(_timestamp) {
+#ifndef cutRelease
             strcpy(trainID, _trainID);
+#endif
             date = _date;
             stationNum = _stationNum;
 //            for (int i = 0; i < stationNum; i++) {
@@ -306,7 +312,9 @@ private://basic data structure
         releasedTrain &operator=(const releasedTrain &other) {
             if (this == &other)return *this;
             timestamp = other.timestamp;
+#ifndef cutRelease
             strcpy(trainID, other.trainID);
+#endif
             date = other.date;
             stationNum = other.stationNum;
 //            for (int i = 0; i < stationNum; i++) {
@@ -331,20 +339,35 @@ private://basic data structure
         }
 
         bool operator<(const releasedTrain &other) const {
+#ifndef cutRelease
             if (strcmp(trainID, other.trainID) != 0)return strcmp(trainID, other.trainID) < 0;
+#endif
             return date < other.date;
         }
 
         bool operator==(const releasedTrain &other) const {
+#ifndef cutRelease
             return strcmp(trainID, other.trainID) == 0 && date == other.date;
+#else
+            return date == other.date;
+#endif
         }
 
         bool operator!=(const releasedTrain &other) const {
+#ifndef cutRelease
             return strcmp(trainID, other.trainID) != 0 || date != other.date;
+#else
+            return date != other.date;
+#endif
         }
 
+#ifndef cutRelease
         void print(const Train &train) {
             std::cout << trainID << " " << type << std::endl;
+#else
+            void print(const Train &train,const char * trainID) {
+            std::cout << trainID << " " << type << std::endl;
+#endif
             int time = startTime;
             for (int i = 0; i < stationNum; ++i) {
                 std::cout << train.stations[i] << " ";
@@ -691,6 +714,14 @@ private://basic data structure
         bool isMin = false;
         int realVal = 0;
 
+        int hash() const {
+            int rsl = 0;
+            for (int i = 0; i < 21; i++) {
+                rsl = rsl * 131 + val[i];
+            }
+            rsl % 1000000007;
+            return rsl;
+        }
         UsernameForBPT() = default;
 
         explicit UsernameForBPT(const std::string &_username) {
@@ -1605,7 +1636,11 @@ private://主分支函数
         assert(vec.size() == 1);
         assert(vec[0].released== true);
 #endif
+#ifndef cutRelease
         rt.print(vec[0]);
+#else
+        rt.print(vec[0],trainID->c_str());
+#endif
     }
 
     void queryTicket(int timestamp, sjtu::vector<std::string> &v) {

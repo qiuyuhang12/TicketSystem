@@ -34,4 +34,5 @@ add_executable(code
         StringFunction.hpp
         BigBlockBpt.hpp
         DateAndTimeStruct.hpp
+        HashBPT.hpp
 )

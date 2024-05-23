@@ -58,7 +58,7 @@ public:
 
     static const ll cut = 1e3;
     static const int M = 4000 / sizeof(Key);
-    static const int L = 4000 / sizeof(Value) < 8 ? 8 : 4000 / sizeof(Value);
+    static const int L = (4000 / sizeof(Value) < 8 ? 8 : 4000 / sizeof(Value))==9?8:(4000 / sizeof(Value) < 8 ? 8 : 4000 / sizeof(Value));
     static_assert(M >= 8, "M should be larger than 8");
     static_assert(L >= 8, "L should be larger than 8");
 
