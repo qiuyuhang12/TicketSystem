@@ -30,8 +30,8 @@ const int TableCapacity = 500;//!2
 
 template<typename Key, typename Block, Hashable<Key> Hash>
 class LRU {
-//private:
-public:
+private:
+//public:
     size_t size = 0;
     std::fstream file;
     const int LinkCapacity = 120;//!2
@@ -213,6 +213,35 @@ public:
             dataNode = dataNode->next;
         }
         file.close();
+    }
+
+    void clear() {
+        for (int i = 0; i < TableCapacity; ++i) {
+            HashNode *p = hashTable[i]->next;
+            while (p != nullptr) {
+                HashNode *q = p->next;
+                delete p;
+                p = q;
+            }
+            hashTable[i]->next = new HashNode();
+            hashTable[i]->next->prev = hashTable[i];
+        }
+        while (head->next != tail) {
+            DataNode *p = head->next;
+            delete p;
+        }
+        head->next = tail;
+        tail->prev = head;
+        size = 0;
+        head = new DataNode();
+        tail = new DataNode();
+        head->next = tail;
+        tail->prev = head;
+        for (int i = 0; i < TableCapacity; ++i) {
+            hashTable[i] = new HashNode();
+            hashTable[i]->next = new HashNode();
+            hashTable[i]->next->prev = hashTable[i];
+        }
     }
 };
 

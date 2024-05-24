@@ -1259,6 +1259,24 @@ public:
     ll size_() {
         return size;
     }
+
+    void clear(){
+        root=1e3;
+        nodeNum=1;
+        blockNum=1;
+        NodesFileEnd=sizeof(node);
+        BlocksFileEnd=sizeof(block);
+        size=0;
+        node *_Root = new node(true, true, 0, 0);
+        writeNodeToEnd(_Root);
+        block *_block = new block(1, -1, -1, NodesFileEnd - sizeof(node));
+        _block->data[0].key.isMin = true;
+        writeBlockToEnd(_block);
+        nodeParent.clear();
+        blockParent.clear();
+        lruBlock.clear();
+        lruNode.clear();
+    }
 };
 
 //void clearFile() {

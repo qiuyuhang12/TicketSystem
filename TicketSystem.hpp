@@ -1936,7 +1936,17 @@ private://主分支函数
         }
     }
 
-    void clean() {}
+    void clean() {
+        UserMap.clear();
+        Username_ToUser.clear();
+        Username_ToOrders.clear();
+        TrainID_ToTrain.clear();
+        TrainIDDate_ToReleasedTrain.clear();
+//        Station_TrainID_ToTrainForQT.clear();
+        Station_TrainID_ToTrainForQTOlyId.clear();
+        TrainIDDate_ToPends.clear();
+
+    }
 
     void exit() {
         std::cout << "bye" << std::endl;
