@@ -29,6 +29,7 @@
 #define SJTU_UTILITY_HPP
 
 #include <utility>
+
 #ifndef debug
 namespace sjtu {
 
@@ -44,6 +45,10 @@ namespace sjtu {
 
         constexpr pair(pair &&other) = default;
 
+        pair(const T1 &x, const T2 &y) : first(x), second(y) {}
+
+        pair& operator=(const pair &other) = default;
+
         template<class U1 = T1, class U2 = T2>
         constexpr pair(U1 &&x, U2 &&y)
                 : first(std::forward<U1>(x)), second(std::forward<U2>(y)) {}
@@ -53,12 +58,20 @@ namespace sjtu {
                 : first(other.first), second(other.second) {}
 
         template<class U1, class U2>
-        constexpr pair(pair<U1, U2> &&other)
-                : first(std::move(other.first)), second(std::move(other.second)) {}
+        constexpr pair(pair<U1, U2>
+                       &&other)
+                :
+                first(std::move(other.first)
+                ),
+                second(std::move(other.second)
+                ) {
+        }
     };
 
     template<class T1, class T2>
-    pair(T1, T2) -> pair<T1, T2>;
+    pair(T1, T2
+    ) ->
+    pair<T1, T2>;
 
 }
 #endif

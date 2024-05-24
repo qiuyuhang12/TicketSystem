@@ -35,4 +35,9 @@ add_executable(code
         BigBlockBpt.hpp
         DateAndTimeStruct.hpp
         HashBPT.hpp
+        externalMap.hpp
+)
+add_executable(testt
+        testt.cpp
+        externalMap.hpp
 )
