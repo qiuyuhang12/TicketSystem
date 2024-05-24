@@ -166,7 +166,10 @@ namespace sjtu {
             if (_size >= max_size)double_size();
             data[_size++] = value;
         }
-
+        void _push_back(const T &value) {
+            if (_size >= max_size)double_size();
+            data[_size++] = std::move(value);
+        }
     };
 
 

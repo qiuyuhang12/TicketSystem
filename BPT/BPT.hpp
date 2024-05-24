@@ -1228,27 +1228,36 @@ public:
         assert(vec.size() == 1);
         delete_(key, vec[0]);
         insert(key, value);
-//        nodeParent.clear();
-//        blockParent.clear();
-//        sjtu::vector<ll> rt;
-//        rt.push_back(root);
-//        sjtu::vector<ll> res = findKey(key, rt);
-//        bool flag = false;
-//        //        for (ll i: res) {
-//        for (ll i0=0; i0<res.size();++i0) {
-//            ll i=res[i0];
-//            block *_block;
-//            readBlock(i, _block);
-//            for (int j = 0; j < _block->size; ++j) {
-//                if (equalK(_block->data[j].key, key)) {
-//                    flag = true;
-//                    _block->data[j].value = value;
-//                    writeBlock(i, _block);
-//                    break;
-//                }
-//            }
-//            if (flag)break;
+    }
+
+    void changeHard(Key key,Value value) {
+//        sjtu::vector<Value> ans;
+        nodeParent.clear();
+        blockParent.clear();
+        sjtu::vector<ll> rt;
+        rt.push_back(root);
+        sjtu::vector<ll> res = findKeyOnlyOne(key, rt);
+        bool flag = false;
+//        for (ll i: res) {
+        for (ll i0 = 0; i0 < res.size(); ++i0) {
+            ll i = res[i0];
+            block *_block;
+            readBlock(i, _block);
+            for (int j = 0; j < _block->size; ++j) {
+                if (equalKey(_block->data[j].key, key)) {
+                    flag = true;
+                    _block->data[j].value = value;
+                    writeBlock(i, _block);
+//                    ans.push_back(_block->data[j].value);
+                    break;
+                }
+            }
+            if (flag)break;
+        }
+//        if (!flag){
+//            return ans;
 //        }
+//        return ans;
     }
 
     ll size_() {
