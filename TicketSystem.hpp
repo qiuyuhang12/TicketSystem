@@ -5,7 +5,12 @@
 #ifndef TICKETSYSTEM_TICKETSYSTEM_HPP
 #define TICKETSYSTEM_TICKETSYSTEM_HPP
 //#define debug
+#define timetest
+#ifdef timetest
 
+#include "timer.hpp"
+
+#endif
 
 #ifdef debug
 
@@ -61,6 +66,10 @@ class TicketSystem {
 private:
 #ifdef debug
     public:
+#endif
+
+#ifdef timetest
+    Timer timerqt,timerpt;
 #endif
 
 private://basic data structure
@@ -1681,12 +1690,25 @@ private://主分支函数
 #endif
 
         try {
+#ifdef timetest
+            timerqt.start();
+#endif
             queryTicket(start, toward, date, pri, ans, ans2, costToIndex, firstStainDateVec, normal, sTrains, tTrains);
         } catch (int) {
+#ifdef timetest
+            timerqt.stop();
+#endif
             std::cout << 0 << std::endl;
             return;
         }
+#ifdef timetest
+        timerqt.stop();
+#endif
 
+
+#ifdef timetest
+        timerpt.start();
+#endif
         std::cout << ans.size() << std::endl;
         for (auto iter = costToIndex.begin(); iter != costToIndex.end(); ++iter) {
             for (auto iter2 = iter->second.begin(); iter2 != iter->second.end(); ++iter2) {
@@ -1698,6 +1720,9 @@ private://主分支函数
 //                            firstStainDateVec[iter2->second]);
             }
         }
+#ifdef timetest
+        timerpt.stop();
+#endif
     }
 
     void queryTransfer(int timestamp, sjtu::vector<std::string> &v) {
@@ -1777,10 +1802,8 @@ private://主分支函数
 ////                Station_TrainIDForBPT(start->c_str(), ""));
 //
 
-        Train tmp=TrainID_ToTrain.find3(TrainIDForBPT(tempe[i].trainID))[0];
-        TrainForQT sTrains=TrainForQT(tmp,tempe[i]);
-
-
+            Train tmp = TrainID_ToTrain.find3(TrainIDForBPT(tempe[i].trainID))[0];
+            TrainForQT sTrains = TrainForQT(tmp, tempe[i]);
 
 
             int firstStainDate = date - (sTrains.nowTime + sTrains.thisOver) / (24 * 60);
@@ -2066,7 +2089,11 @@ public:
                      TrainIDDate_ToReleasedTrain("TrainIDDate_ToReleasedTrain", 600, 500),
 //                     Station_TrainID_ToTrainForQT("Station_TrainID_ToTrainForQT"),
                      Station_TrainID_ToTrainForQTOlyId("Station_TrainID_ToTrainForQTOlyID", 600, 500),
-                     TrainIDDate_ToPends("TrainIDDate_ToPends", 600, 500) {
+                     TrainIDDate_ToPends("TrainIDDate_ToPends", 600, 500)
+#ifdef timetest
+,timerpt("timerpt"), timerqt("timerqt")
+#endif
+                     {
 //        std::cout << "User_Size:  " << sizeof(User) << std::endl <<
 //                  "Train_Size:  " << sizeof(Train) << std::endl <<
 //                  "releasedTrain_Size:  " << sizeof(releasedTrain) << std::endl <<
@@ -2085,6 +2112,24 @@ public:
     }
 
     void run() {
+#ifdef timetest
+        Timer timer("clean");
+        Timer timer2("exit");
+        Timer timer3("add_user");
+        Timer timer4("login");
+        Timer timer5("logout");
+        Timer timer6("query_profile");
+        Timer timer7("modify_profile");
+        Timer timer8("add_train");
+        Timer timer9("delete_train");
+        Timer timer10("release_train");
+        Timer timer11("query_train");
+        Timer timer12("query_ticket");
+        Timer timer13("query_transfer");
+        Timer timer14("buy_ticket");
+        Timer timer15("query_order");
+        Timer timer16("refund_ticket");
+#endif
         while (true) {
             std::string timestampStr, cmd;
             std::cin >> timestampStr >> cmd;
@@ -2093,7 +2138,13 @@ public:
                 clean();
             }
             if (cmd == "exit") {
+#ifdef timetest
+                timer2.start();
+#endif
                 exit();
+#ifdef timetest
+                timer2.stop();
+#endif
                 return;
             }
             int timestamp = timestampStrToInt(timestampStr);
@@ -2102,47 +2153,132 @@ public:
             getline(std::cin, message);
             splitString(message, v);
             if (cmd == "add_user") {
+#ifdef timetest
+                timer3.start();
+#endif
                 addUser(timestamp, v);
+#ifdef timetest
+                timer3.stop();
+#endif
             }
             if (cmd == "login") {
+#ifdef timetest
+                timer4.start();
+#endif
                 login(timestamp, v);
+#ifdef timetest
+                timer4.stop();
+#endif
             }
             if (cmd == "logout") {
+#ifdef timetest
+                timer5.start();
+#endif
                 logout(timestamp, v);
+
+#ifdef timetest
+                timer5.stop();
+#endif
             }
             if (cmd == "query_profile") {
+#ifdef timetest
+                timer6.start();
+#endif
                 queryProfile(timestamp, v);
+#ifdef timetest
+                timer6.stop();
+#endif
             }
             if (cmd == "modify_profile") {
+#ifdef timetest
+                timer7.start();
+#endif
                 modifyProfile(timestamp, v);
+#ifdef timetest
+                timer7.stop();
+#endif
             }
             if (cmd == "add_train") {
+#ifdef timetest
+                timer8.start();
+#endif
                 addTrain(timestamp, v);
+#ifdef timetest
+                timer8.stop();
+#endif
             }
             if (cmd == "delete_train") {
+#ifdef timetest
+                timer9.start();
+#endif
                 deleteTrain(timestamp, v);
+#ifdef timetest
+                timer9.stop();
+#endif
             }
             if (cmd == "release_train") {
+#ifdef timetest
+                timer10.start();
+#endif
                 releaseTrain(timestamp, v);
+#ifdef timetest
+                timer10.stop();
+#endif
             }
             if (cmd == "query_train") {
+#ifdef timetest
+                timer11.start();
+#endif
                 queryTrain(timestamp, v);
+#ifdef timetest
+                timer11.stop();
+#endif
             }
             if (cmd == "query_ticket") {
+#ifdef timetest
+                timer12.start();
+#endif
                 queryTicket(timestamp, v);
+#ifdef timetest
+                timer12.stop();
+#endif
             }
             if (cmd == "query_transfer") {
+#ifdef timetest
+                timer13.start();
+#endif
 //                continue;
                 queryTransfer(timestamp, v);
+#ifdef timetest
+                timer13.stop();
+#endif
             }
             if (cmd == "buy_ticket") {
+#ifdef timetest
+                timer14.start();
+#endif
                 buyTicket(timestamp, v);
+#ifdef timetest
+                timer14.stop();
+#endif
             }
             if (cmd == "query_order") {
+#ifdef timetest
+                timer15.start();
+#endif
                 queryOrder(timestamp, v);
+#ifdef timetest
+                timer15.stop();
+#endif
             }
             if (cmd == "refund_ticket") {
+#ifdef timetest
+                timer16.start();
+#endif
                 refundTicket(timestamp, v);
+#ifdef timetest
+                timer16.stop();
+#endif
             }
         }
 #ifdef debug

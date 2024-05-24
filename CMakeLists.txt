@@ -4,7 +4,8 @@ project(TicketSystem)
 set(CMAKE_CXX_STANDARD 20)
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address -fsanitize=undefined -fsanitize=leak")
 #开o2
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Ofast")
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Ofast")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2")
 #add_executable(TicketSystem
 #        BPT/LRU.hpp
 #        BPT/BPT.hpp
@@ -40,4 +41,8 @@ add_executable(code
 add_executable(testt
         testt.cpp
         externalMap.hpp
+)
+add_executable(testttt
+        testttt.cpp
+        timer.hpp
 )

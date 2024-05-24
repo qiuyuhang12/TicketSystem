@@ -124,6 +124,10 @@ public:
         return rsl;
     }
 
+    Value get(const Key &key) {
+        return getValue(date.find(key)->second);
+    }
+
     int _size() {
         return size;
     }
