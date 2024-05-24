@@ -963,7 +963,7 @@ public:
     BPT() = delete;
 
     BPT(std::string filePath, int ln, int lb) : filename(std::move(filePath)), lruBlock(lb), lruNode(ln) {
-//        std::cout << filePath << ":" << lruNode.LinkCapacity << ' ' << lruBlock.LinkCapacity << std::endl
+//        std::cout << filename << ":" << lruNode.LinkCapacity << ' ' << lruBlock.LinkCapacity << std::endl
 //                  << sizeof(node) << ' ' << sizeof(block) << ' ' << M << ' ' << L << ' ' << std::endl;
         nodesPath = filename + "Nodes";
         blocksPath = filename + "Blocks";
@@ -1024,7 +1024,7 @@ public:
                                                                                                               sizeof(Key)+1)))),
                                              lruNode(5 + dataNum / 4000 * (sizeof(Key) + 4)) {
 //        输出lrulimit
-//        std::cout << filePath << ":" << lruNode.LinkCapacity << ' ' << lruBlock.LinkCapacity << std::endl
+//        std::cout << filename << ":" << lruNode.LinkCapacity << ' ' << lruBlock.LinkCapacity << std::endl
 //                  << sizeof(node) << ' ' << sizeof(block) << ' ' << M << ' ' << L << ' ' << std::endl;
         nodesPath = filename + "Nodes";
         blocksPath = filename + "Blocks";

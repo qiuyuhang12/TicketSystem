@@ -1706,20 +1706,29 @@ public:
             std::cout << 0 << std::endl;
             return;
         }
+
+        //经过第一站的所有火车
         auto tempe = std::move(Station_TrainID_ToTrainForQTOlyId.find3(Station_TrainIDForBPT(start->c_str(), "")));
 
-        sjtu::vector<TrainForQT> sTrains;
-//        for (auto &i: tempe) {
-        for (int i_ = 0; i_ < tempe.size(); ++i_) {
-            auto &i = tempe[i_];
-            auto temp = std::move(TrainID_ToTrain.find3(TrainIDForBPT(i.trainID)));
-#ifdef debug
-            assert(temp.size() == 1);
-#endif
-            sTrains.push_back(TrainForQT(temp[0], i));
-        }
-//        = Station_TrainID_ToTrainForQT.find3(
-//                Station_TrainIDForBPT(start->c_str(), ""));
+
+
+
+
+
+
+//        //经过第一站的所有火车的全部信息
+//        sjtu::vector<TrainForQT> sTrains;
+////        for (auto &i: tempe) {
+//        for (int i_ = 0; i_ < tempe.size(); ++i_) {
+//            auto &i = tempe[i_];
+//            auto temp = std::move(TrainID_ToTrain.find3(TrainIDForBPT(i.trainID)));
+//#ifdef debug
+//            assert(temp.size() == 1);
+//#endif
+//            sTrains.push_back(TrainForQT(temp[0], i));
+//        }
+////        = Station_TrainID_ToTrainForQT.find3(
+////                Station_TrainIDForBPT(start->c_str(), ""));
         sjtu::vector<TrainForQTOnlyId> tTrains;
 #ifdef debug
 //        tTrains = sjtuVtoStdV(Station_TrainID_ToTrainForQTOlyId.find3(Station_TrainIDForBPT(to->c_str(), "")));
@@ -1728,10 +1737,17 @@ public:
 #ifndef debug
         tTrains = std::move(Station_TrainID_ToTrainForQTOlyId.find3(Station_TrainIDForBPT(to->c_str(), "")));
 #endif
-        if (sTrains.empty() || tTrains.empty()) {
+        if (tempe.empty() || tTrains.empty()) {
             std::cout << 0 << std::endl;
             return;
         }
+
+
+
+
+
+
+
         TrainForQT startS;
 //        将startS.trainID制成最大
         strcpy(startS.trainID, "\127\127\127\127\127\127\127\0");
@@ -1744,10 +1760,34 @@ public:
         std::string trans;
 
 
-        for (int i = 0; i < sTrains.size(); ++i) {
-            int firstStainDate = date - (sTrains[i].nowTime + sTrains[i].thisOver) / (24 * 60);
-            if (sTrains[i].saleDate[0] > firstStainDate || firstStainDate > sTrains[i].saleDate[1])continue;
-            int start_timeOfFirstTrain = sTrains[i].nowTime + sTrains[i].thisOver;
+        for (int i = 0; i < tempe.size(); ++i) {
+
+
+
+
+            //第i趟经过第一站的所有火车的全部信息
+            sjtu::vector<TrainForQT> sTrains;
+//        for (auto &i: tempe) {
+            for (int i_ = i; i_ < i+1; ++i_) {
+                auto &i11 = tempe[i_];
+                auto temp = std::move(TrainID_ToTrain.find3(TrainIDForBPT(i11.trainID)));
+#ifdef debug
+                assert(temp.size() == 1);
+#endif
+                sTrains.push_back(TrainForQT(temp[0], i11));
+            }
+//        = Station_TrainID_ToTrainForQT.find3(
+//                Station_TrainIDForBPT(start->c_str(), ""));
+
+
+
+
+
+
+
+            int firstStainDate = date - (sTrains[0].nowTime + sTrains[0].thisOver) / (24 * 60);
+            if (sTrains[0].saleDate[0] > firstStainDate || firstStainDate > sTrains[0].saleDate[1])continue;
+            int start_timeOfFirstTrain = sTrains[0].nowTime + sTrains[0].thisOver;
             int arrive_TimeOfFirstTrain = start_timeOfFirstTrain;
 
 
@@ -1759,13 +1799,13 @@ public:
             std::string tranStation;
 
 
-            for (int k = sTrains[i].nowStation + 1; k < sTrains[i].stationNum; ++k) {
-                int k0 = k - sTrains[i].nowStation - 1;
-                arrive_TimeOfFirstTrain += sTrains[i].travelTime[k];
+            for (int k = sTrains[0].nowStation + 1; k < sTrains[0].stationNum; ++k) {
+                int k0 = k - sTrains[0].nowStation - 1;
+                arrive_TimeOfFirstTrain += sTrains[0].travelTime[k];
                 int arrive_DATOfFirstTrain = firstStainDate * 24 * 60 + arrive_TimeOfFirstTrain;
                 int arrive_day1 = firstStainDate + arrive_TimeOfFirstTrain / (24 * 60);
                 int arrive_time1 = arrive_TimeOfFirstTrain % (24 * 60);
-                tranStation = sTrains[i].stations[k];
+                tranStation = sTrains[0].stations[k];
 
 #ifdef debug
 //                sTrains2.push_back(sjtuVtoStdV(
@@ -1783,18 +1823,18 @@ public:
                 try {
                     queryTicket(&tranStation, to, arrive_day1, pri, nd_ans, nd_ans2, nd_costToIndex,
                                 nd_firstStainDateVec,
-                                after, sTrains2[k0], tTrains2[k0], arrive_time1, firstStainDate, &sTrains[i], k, &ks);
+                                after, sTrains2[k0], tTrains2[k0], arrive_time1, firstStainDate, &sTrains[0], k, &ks);
                 } catch (int) {
-                    arrive_TimeOfFirstTrain += sTrains[i].stopoverTime[k];
+                    arrive_TimeOfFirstTrain += sTrains[0].stopoverTime[k];
                     continue;
                 }
-                arrive_TimeOfFirstTrain += sTrains[i].stopoverTime[k];
+                arrive_TimeOfFirstTrain += sTrains[0].stopoverTime[k];
             }
             bool little_flag = false;
             for (auto iter: nd_costToIndex) {
                 for (auto iter2: iter.second) {
                     for (auto iter3: iter2.second) {
-                        if (strcmp(sTrains[i].trainID, iter3.first.str) == 0)continue;
+                        if (strcmp(sTrains[0].trainID, iter3.first.str) == 0)continue;
                         int index = iter3.second;
                         int k = ks[index];
                         //如果车次一样就跳过
@@ -1823,7 +1863,7 @@ public:
                             int b2 = nowsecondCost - secondCost;
                             if (b2 < 0)change = true;
                             else if (b2 == 0) {
-                                int b3 = strcmp(sTrains[i].trainID, startS.trainID);
+                                int b3 = strcmp(sTrains[0].trainID, startS.trainID);
                                 if (b3 < 0)change = true;
                                 else if (b3 == 0) {
                                     int b4 = strcmp(iter3.first.str,
@@ -1835,13 +1875,13 @@ public:
                         if (change) {
                             cost = nowCost;
                             secondCost = nowsecondCost;
-                            startS = sTrains[i];
+                            startS = sTrains[0];
 //                        TicketSystem::TrainForQTOnlyId::TrainForQTOnlyId(const char *_trainID, int _nowStation, int _nowTime, int _thisOver, int _nowPrice, const int *_saleDate)
-                            tranS1 = TrainForQTOnlyId(sTrains[i].trainID, k, getTime(k, sTrains[i]),
-                                                      sTrains[i].stopoverTime[k], sTrains[i].price[k],
-                                                      sTrains[i].saleDate);
+                            tranS1 = TrainForQTOnlyId(sTrains[0].trainID, k, getTime(k, sTrains[0]),
+                                                      sTrains[0].stopoverTime[k], sTrains[0].price[k],
+                                                      sTrains[0].saleDate);
                             tranS2 = *nd_ans[index];
-                            trans = sTrains[i].stations[k];
+                            trans = sTrains[0].stations[k];
                             toS = *nd_ans2[index];
 //                            toS = **(nd_ans2.data + index);
                             firstTrain_firstStainDate = firstStainDate;
@@ -2022,12 +2062,12 @@ public:
     }
 
 public:
-    TicketSystem() : Username_ToUser("Username_ToUser", 50, 50), Username_ToOrders("Username_ToOrders", 50, 50),
-                     TrainID_ToTrain("TrainID_ToTrain", 50, 50),
-                     TrainIDDate_ToReleasedTrain("TrainIDDate_ToReleasedTrain", 50, 50),
+    TicketSystem() : Username_ToUser("Username_ToUser", 12000), Username_ToOrders("Username_ToOrders",10000),
+                     TrainID_ToTrain("TrainID_ToTrain", 12000),
+                     TrainIDDate_ToReleasedTrain("TrainIDDate_ToReleasedTrain", 400, 200),
 //                     Station_TrainID_ToTrainForQT("Station_TrainID_ToTrainForQT"),
-                     Station_TrainID_ToTrainForQTOlyId("Station_TrainID_ToTrainForQTOlyID", 50, 50),
-                     TrainIDDate_ToPends("TrainIDDate_ToPends", 50, 50) {
+                     Station_TrainID_ToTrainForQTOlyId("Station_TrainID_ToTrainForQTOlyID", 400, 200),
+                     TrainIDDate_ToPends("TrainIDDate_ToPends", 400, 200) {
 //        std::cout << "User_Size:  " << sizeof(User) << std::endl <<
 //                  "Train_Size:  " << sizeof(Train) << std::endl <<
 //                  "releasedTrain_Size:  " << sizeof(releasedTrain) << std::endl <<
@@ -2093,6 +2133,7 @@ public:
                 queryTicket(timestamp, v);
             }
             if (cmd == "query_transfer") {
+//                continue;
                 queryTransfer(timestamp, v);
             }
             if (cmd == "buy_ticket") {
