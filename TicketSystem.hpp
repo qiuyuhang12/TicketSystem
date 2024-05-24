@@ -4,7 +4,7 @@
 
 #ifndef TICKETSYSTEM_TICKETSYSTEM_HPP
 #define TICKETSYSTEM_TICKETSYSTEM_HPP
-#define debug
+//#define debug
 
 
 #ifdef debug

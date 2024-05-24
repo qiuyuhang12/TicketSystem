@@ -18,7 +18,7 @@ namespace sjtu {
     private:
     public:
         T *data = nullptr;
-        size_t _size = 0, max_size = 128;
+        size_t _size = 0, max_size = 32;
 
         void _clear() {
             delete[] data;
