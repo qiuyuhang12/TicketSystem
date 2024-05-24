@@ -5,7 +5,7 @@
 #ifndef TICKETSYSTEM_TICKETSYSTEM_HPP
 #define TICKETSYSTEM_TICKETSYSTEM_HPP
 //#define debug
-//#define timetest
+#define timetest
 #ifdef timetest
 
 #include "timer.hpp"
@@ -69,7 +69,7 @@ private:
 #endif
 
 #ifdef timetest
-    Timer timerqt,timerpt;
+    Timer timerqt, timerpt;
 #endif
 
 private://basic data structure
@@ -269,7 +269,8 @@ private://basic data structure
         }
     };
 
-//#define cutRelease
+#define cutRelease
+
     struct releasedTrain {//先id序 后time序
         int timestamp = 0;//only for debug (releaseTime)
 #ifndef cutRelease
@@ -377,7 +378,8 @@ private://basic data structure
         void print(const Train &train) {
             std::cout << trainID << " " << type << std::endl;
 #else
-            void print(const Train &train,const char * trainID) {
+
+        void print(const Train &train, const char *trainID) {
             std::cout << trainID << " " << type << std::endl;
 #endif
             int time = startTime;
@@ -513,6 +515,9 @@ private://basic data structure
     class TrainForQTOnlyId;
 
     //注意换乘排除同一辆车
+#define deleteTrainForQT
+
+//#ifndef deleteTrainForQT
     struct TrainForQT {//time序
         char trainID[21] = {};//unique
         int nowStation = 0;//是第几站（0为始发站）
@@ -648,6 +653,7 @@ private://basic data structure
         }
     };
 
+//#endif
     class TrainForQTOnlyId {
     public:
         //可以删除TRAINID
@@ -684,6 +690,7 @@ private://basic data structure
             }
         }
 
+//#ifndef deleteTrainForQT
         explicit TrainForQTOnlyId(const TrainForQT &other) {
             strcpy(trainID, other.trainID);
             nowStation = other.nowStation;
@@ -695,6 +702,7 @@ private://basic data structure
             }
         }
 
+//#endif
         TrainForQTOnlyId &operator=(TrainForQTOnlyId const &other) {
             if (this == &other)return *this;
             strcpy(trainID, other.trainID);
@@ -1224,6 +1232,85 @@ private://实现函数
         }
     }
 
+    void __queryTicket(const std::string *start, const std::string *toward, int date, int pri,
+                       sjtu::vector<TrainForQTOnlyId *> &ans, sjtu::vector<TrainForQTOnlyId *> &ans2,
+                       sjtu::map<int, sjtu::map<int, sjtu::map<String, int> > > &costToIndex,
+                       sjtu::vector<int> &firstStainDateVec,
+                       QT_type type, sjtu::vector<TrainForQTOnlyId> &sTrains, sjtu::vector<TrainForQTOnlyId> &tTrains,
+                       int afterTime = 0, int firstStationdate = 0, Train *firstTrain = nullptr,
+                       TrainForQTOnlyId *first_trainForQtOnlyId = nullptr, int k = 0,
+                       sjtu::vector<int> *ks = nullptr) {
+        if (sTrains.empty() || tTrains.empty()) {
+            throw 0;
+            return;
+        }
+//        sjtu::vector<int> IndexToAnotherCost;
+
+        int j0 = 0;
+        //assert train的id单调递增
+//        for (int i = 0; i < sTrains.size(); ++i) {
+//            assert(i == 0 || strcmp(sTrains[i].trainID, sTrains[i - 1].trainID) > 0);
+//        }
+//        for (int j = 0; j < tTrains.size(); ++j) {
+//            assert(j == 0 || strcmp(tTrains[j].trainID, tTrains[j - 1].trainID) > 0);
+//        }
+        for (int i = 0; i < sTrains.size(); ++i) {
+            int firstStainDate = date - (sTrains[i].nowTime + sTrains[i].thisOver) / (24 * 60);
+            if (type == after) {
+                if (afterTime > (sTrains[i].nowTime + sTrains[i].thisOver) % (24 * 60))++firstStainDate;
+            }
+            if (firstStainDate > sTrains[i].saleDate[1])continue;
+            if (sTrains[i].saleDate[0] > firstStainDate) {
+                if (type == normal)continue;
+                firstStainDate = sTrains[i].saleDate[0];
+            }
+            for (int j = j0; j < tTrains.size(); ++j) {
+                ++j0;
+                int cmp = strcmp(sTrains[i].trainID, tTrains[j].trainID);
+                if (cmp < 0) {
+                    --j0;
+                    break;
+                }
+                if (cmp == 0) {
+                    if (sTrains[i].nowStation < tTrains[j].nowStation) {
+                        ans.push_back(&(sTrains[i]));
+                        ans2.push_back(&(tTrains[j]));
+//                        ans.push_back(sTrains.data + i);
+//                        ans2.push_back(tTrains.data + j);
+                        firstStainDateVec.push_back(firstStainDate);
+                        int price = 0, time = 0;
+                        char *id = id = sTrains[i].trainID;
+                        if (type == normal) {
+                            price = tTrains[j].nowPrice - sTrains[i].nowPrice;
+                            time = tTrains[j].nowTime - sTrains[i].nowTime - sTrains[i].thisOver;
+                        } else {
+                            ks->push_back(k);
+                            price = tTrains[j].nowPrice - sTrains[i].nowPrice + firstTrain->price[k] -
+                                    firstTrain->price[first_trainForQtOnlyId->nowStation];
+                            time = (firstStainDateVec.back() - firstStationdate) * 24 * 60 + ans2.back()->nowTime -
+                                   first_trainForQtOnlyId->nowTime - first_trainForQtOnlyId->thisOver;
+                        }
+                        if (pri == _price) {
+                            if (type == normal) costToIndex[price][0][id] = ans.size() - 1;
+                            else costToIndex[price][time][id] = ans.size() - 1;
+                        }
+//                            costToIndex[tTrains[j].nowPrice - sTrains[i].nowPrice][sTrains[i].trainID] = ans.size() - 1;
+                        else if (pri == _time) {
+                            if (type == normal)costToIndex[time][0][id] = ans.size() - 1;
+                            else costToIndex[time][price][id] = ans.size() - 1;
+                        }
+//                            costToIndex[tTrains[j].nowTime - sTrains[i].nowTime -
+//                                        sTrains[i].thisOver][sTrains[i].trainID] = ans.size() - 1;
+                    }
+                    break;
+                }
+            }
+        }
+        if (ans.empty()) {
+            throw 0;
+            return;
+        }
+    }
 //#ifndef debug
 //    void _queryTicket(const std::string *start, const std::string *toward, int date, int pri,
 //                     std::vector<TrainForQTOnlyId *> &ans, std::vector<TrainForQTOnlyId *> &ans2,
@@ -1288,12 +1375,26 @@ private://实现函数
 //        }
 //    }
 //#endif
+//#ifndef deleteTrainForQT
+
     int getTime(int k, const TrainForQT &train) {
         int time = train.nowTime;
         for (int i = train.nowStation + 1; i <= k; ++i) {
             time += train.travelTime[i];
         }
         for (int i = train.nowStation; i < k; ++i) {
+            time += train.stopoverTime[i];
+        }
+        return time;
+    }
+
+//#endif
+    int getTime(int k, const Train &train, const TrainForQTOnlyId &trainForQtOnlyId) {
+        int time = trainForQtOnlyId.nowTime;
+        for (int i = trainForQtOnlyId.nowStation + 1; i <= k; ++i) {
+            time += train.travelTime[i];
+        }
+        for (int i = trainForQtOnlyId.nowStation; i < k; ++i) {
             time += train.stopoverTime[i];
         }
         return time;
@@ -1601,13 +1702,15 @@ private://主分支函数
             rt.date = i;
             TrainIDDate_ToReleasedTrain.insert(TrainIDDateForBPT(*trainID, i), rt);
         }
-
+#ifndef deleteTrainForQT
         TrainForQT tfq(train.trainID, 0, train.startTime, 0, train.stationNum, train.stations, train.saleDate,
                        train.travelTime, train.stopoverTime, train.price, train.type, 0);
+#endif
         TrainForQTOnlyId tfqoi(train.trainID, 0, train.startTime, train.stopoverTime[0], 0, train.saleDate);
 //        Station_TrainID_ToTrainForQT.insert(Station_TrainIDForBPT(train.stations[0], train.trainID), tfq);
         Station_TrainID_ToTrainForQTOlyId.insert(Station_TrainIDForBPT(train.stations[0], train.trainID), tfqoi);
-        for (int i = 1; i < tfq.stationNum; ++i) {
+#ifndef deleteTrainForQT
+        for (int i = 1; i < tfqoi.stationNum; ++i) {
             tfq.nowStation++;
             tfq.nowTime += tfq.travelTime[i] + tfq.stopoverTime[i - 1];
             tfq.nowPrice = tfq.price[i];
@@ -1620,7 +1723,23 @@ private://主分支函数
 //            Station_TrainID_ToTrainForQT.insert(stfb, tfq);
             Station_TrainID_ToTrainForQTOlyId.insert(stfb, tfqoi);
         }
+#else
+        for (int i = 1; i < train.stationNum; ++i) {
+//            tfq.nowStation++;
+//            tfq.nowTime += tfq.travelTime[i] + tfq.stopoverTime[i - 1];
+//            tfq.nowPrice = tfq.price[i];
+//            tfq.thisOver = tfq.stopoverTime[i];
+            tfqoi.nowStation++;
+            tfqoi.nowTime += train.travelTime[i] + train.stopoverTime[i - 1];
+            tfqoi.nowPrice = train.price[i];
+            tfqoi.thisOver = train.stopoverTime[i];
+            Station_TrainIDForBPT stfb(train.stations[i], train.trainID);
+//            Station_TrainID_ToTrainForQT.insert(stfb, tfq);
+            Station_TrainID_ToTrainForQTOlyId.insert(stfb, tfqoi);
+        }
     }
+
+#endif
 
     void queryTrain(int timestamp, sjtu::vector<std::string> &v) {
         std::string *trainID;
@@ -1656,7 +1775,7 @@ private://主分支函数
 #ifndef cutRelease
         rt.print(vec[0]);
 #else
-        rt.print(vec[0],trainID->c_str());
+        rt.print(vec[0], trainID->c_str());
 #endif
     }
 
@@ -1693,7 +1812,8 @@ private://主分支函数
 #ifdef timetest
             timerqt.start();
 #endif
-            queryTicket(start, toward, date, pri, ans, ans2, costToIndex, firstStainDateVec, normal, sTrains, tTrains);
+            __queryTicket(start, toward, date, pri, ans, ans2, costToIndex, firstStainDateVec, normal, sTrains,
+                          tTrains);
         } catch (int) {
 #ifdef timetest
             timerqt.stop();
@@ -1769,8 +1889,9 @@ private://主分支函数
             return;
         }
 
-
+//#ifndef deleteTrainForQT
         TrainForQT startS;
+//#endif
 //        将startS.trainID制成最大
         strcpy(startS.trainID, "\127\127\127\127\127\127\127\0");
         TrainForQTOnlyId tranS1, tranS2, toS;
@@ -2091,9 +2212,9 @@ public:
                      Station_TrainID_ToTrainForQTOlyId("Station_TrainID_ToTrainForQTOlyID", 600, 500),
                      TrainIDDate_ToPends("TrainIDDate_ToPends", 600, 500)
 #ifdef timetest
-,timerpt("timerpt"), timerqt("timerqt")
+            , timerpt("timerpt"), timerqt("timerqt")
 #endif
-                     {
+    {
 //        std::cout << "User_Size:  " << sizeof(User) << std::endl <<
 //                  "Train_Size:  " << sizeof(Train) << std::endl <<
 //                  "releasedTrain_Size:  " << sizeof(releasedTrain) << std::endl <<
