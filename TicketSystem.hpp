@@ -2205,12 +2205,12 @@ private://主分支函数
     }
 
 public:
-    TicketSystem() : Username_ToUser("Username_ToUser", 30000), Username_ToOrders("Username_ToOrders", 30000),
+    TicketSystem() : Username_ToUser("Username_ToUser", 12000), Username_ToOrders("Username_ToOrders", 12000),
                      TrainID_ToTrain("TrainID_ToTrain"),
-                     TrainIDDate_ToReleasedTrain("TrainIDDate_ToReleasedTrain", 600, 500),
+                     TrainIDDate_ToReleasedTrain("TrainIDDate_ToReleasedTrain", 100, 50),
 //                     Station_TrainID_ToTrainForQT("Station_TrainID_ToTrainForQT"),
-                     Station_TrainID_ToTrainForQTOlyId("Station_TrainID_ToTrainForQTOlyID", 600, 500),
-                     TrainIDDate_ToPends("TrainIDDate_ToPends", 600, 500)
+                     Station_TrainID_ToTrainForQTOlyId("Station_TrainID_ToTrainForQTOlyID", 100, 50),
+                     TrainIDDate_ToPends("TrainIDDate_ToPends", 100, 50)
 #ifdef timetest
             , timerpt("timerpt"), timerqt("timerqt")
 #endif
