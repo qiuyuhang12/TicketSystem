@@ -48,7 +48,6 @@ private:
     }
 
     void PUSH() {
-//        typename sjtu::map<Key,int>::value_type *tmp=new typename sjtu::map<Key,int>::value_type[size];
         auto *tmp1 = new Key[size];
         auto *tmp2 = new int[size];
         int i = -1;

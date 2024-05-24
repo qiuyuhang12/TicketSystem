@@ -1239,7 +1239,6 @@ public:
         rt.push_back(root);
         sjtu::vector<ll> res = findKeyOnlyOne(key, rt);
         bool flag = false;
-//        for (ll i: res) {
         for (ll i0 = 0; i0 < res.size(); ++i0) {
             ll i = res[i0];
             block *_block;
@@ -1255,10 +1254,6 @@ public:
             }
             if (flag)break;
         }
-//        if (!flag){
-//            return ans;
-//        }
-//        return ans;
     }
 
     ll size_() {
