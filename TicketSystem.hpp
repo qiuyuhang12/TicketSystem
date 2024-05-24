@@ -1001,7 +1001,7 @@ private://basic data structure
     BPT<UsernameForBPT, User> Username_ToUser;//28(key) 112(value) 10000(数据量) 读SF
 
     externalMap<TrainIDForBPT, Train> TrainID_ToTrain;//23 10000 读SF
-    BPT<TrainIDDateForBPT, releasedTrain> TrainIDDate_ToReleasedTrain;//36 10000*90 读写SF
+    BigBlockBpt<TrainIDDateForBPT, releasedTrain> TrainIDDate_ToReleasedTrain;//36 10000*90 读写SF
 //    BigBlockBpt<Station_TrainIDForBPT, TrainForQT> Station_TrainID_ToTrainForQT;
     BPT<Station_TrainIDForBPT, TrainForQTOnlyId> Station_TrainID_ToTrainForQTOlyId;//53 10000*90*100 读SF
     BPT<TrainIDDateForBPT, Order> TrainIDDate_ToPends;//36 1000000
@@ -1181,6 +1181,7 @@ private://实现函数
             return;
         }
 //        sjtu::vector<int> IndexToAnotherCost;
+        int j0 = 0;
         for (int i = 0; i < sTrains.size(); ++i) {
             int firstStainDate = date - (sTrains[i].nowTime + sTrains[i].thisOver) / (24 * 60);
             if (type == after) {
@@ -1191,8 +1192,14 @@ private://实现函数
                 if (type == normal)continue;
                 firstStainDate = sTrains[i].saleDate[0];
             }
-            for (int j = 0; j < tTrains.size(); ++j) {
-                if (strcmp(sTrains[i].trainID, tTrains[j].trainID) == 0) {
+            for (int j = j0; j < tTrains.size(); ++j) {
+                ++j0;
+                int cmp = strcmp(sTrains[i].trainID, tTrains[j].trainID);
+                if (cmp < 0) {
+                    --j0;
+                    break;
+                }
+                if (cmp == 0) {
                     if (sTrains[i].nowStation < tTrains[j].nowStation) {
                         ans.push_back(&(sTrains[i]));
                         ans2.push_back(&(tTrains[j]));

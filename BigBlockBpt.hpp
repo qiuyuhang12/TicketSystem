@@ -119,6 +119,15 @@ public:
         file.write(reinterpret_cast<char *>(&value), sizeof(value));
     }
 
+    void changeHard(Key key, Value value) {
+        auto pos = bpt.findHard(key);
+#ifdef debug
+        assert(pos.size() == 1);
+#endif
+        file.seekp(pos[0], std::ios::beg);
+        file.write(reinterpret_cast<char *>(&value), sizeof(value));
+    }
+
 //    void clear() {
 //        bpt.clear();
 //        size = 0;

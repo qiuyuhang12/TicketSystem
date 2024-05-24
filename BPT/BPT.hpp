@@ -1230,6 +1230,7 @@ public:
         insert(key, value);
     }
 
+    //必须保证key唯一
     void changeHard(Key key,Value value) {
 //        sjtu::vector<Value> ans;
         nodeParent.clear();
