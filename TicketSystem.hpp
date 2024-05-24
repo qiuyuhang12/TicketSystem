@@ -2012,8 +2012,8 @@ private://主分支函数
     }
 
 public:
-    TicketSystem() : Username_ToUser("Username_ToUser",6000*1), Username_ToOrders("Username_ToOrders",6000*1),
-                     TrainID_ToTrain("TrainID_ToTrain",6000*1),
+    TicketSystem() : Username_ToUser("Username_ToUser",50,50), Username_ToOrders("Username_ToOrders",50,50),
+                     TrainID_ToTrain("TrainID_ToTrain",50,50),
                      TrainIDDate_ToReleasedTrain("TrainIDDate_ToReleasedTrain",50,50),
 //                     Station_TrainID_ToTrainForQT("Station_TrainID_ToTrainForQT"),
                      Station_TrainID_ToTrainForQTOlyId("Station_TrainID_ToTrainForQTOlyID",50,50),
