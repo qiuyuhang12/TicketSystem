@@ -8,7 +8,7 @@
 //#define timetest
 #ifdef timetest
 
-#include "timer.hpp"
+#include "src/timer.hpp"
 
 #endif
 #ifdef debug
@@ -28,11 +28,11 @@
 #define sjtu std
 #endif
 
-#include "BPT/BPT.hpp"
-#include "BigBlockBpt.hpp"
-#include "StringFunction.hpp"
-#include "DateAndTimeStruct.hpp"
-#include "externalMap.hpp"
+#include "src/BPT/BPT.hpp"
+#include "src/BigBlockBpt.hpp"
+#include "src/StringFunction.hpp"
+#include "src/DateAndTimeStruct.hpp"
+#include "src/externalMap.hpp"
 
 void clearFile() {
     remove("Station_TrainID_ToTrainForQT");
@@ -69,7 +69,6 @@ private://basic data structure
 #ifdef debug
     public:
 #endif
-//    todo：修改price为累计价格
     enum orderStatus {
         success,
         pending,
