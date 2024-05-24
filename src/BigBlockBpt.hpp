@@ -128,11 +128,11 @@ public:
         file.write(reinterpret_cast<char *>(&value), sizeof(value));
     }
 
-//    void clear() {
-//        bpt.clear();
-//        size = 0;
-//        endOfFile = 100;
-//    }
+    void clear() {
+        bpt.clear();
+        size = 0;
+        endOfFile = 100;
+    }
 };
 
 #endif //TICKETSYSTEM_BIGBLOCKBPT_HPP

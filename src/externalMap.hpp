@@ -135,6 +135,12 @@ public:
         file.seekp(date[key], std::ios::beg);
         file.write(reinterpret_cast<char *>(&value), sizeof(value));
     }
+
+    void clear() {
+        date.clear();
+        size = 0;
+        endOfFile = 100;
+    }
 };
 
 #endif //TICKETSYSTEM_EXTERNALMAP_HPP
