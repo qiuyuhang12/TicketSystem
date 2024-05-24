@@ -5,7 +5,7 @@
 #ifndef TICKETSYSTEM_TICKETSYSTEM_HPP
 #define TICKETSYSTEM_TICKETSYSTEM_HPP
 //#define debug
-#define timetest
+//#define timetest
 #ifdef timetest
 
 #include "timer.hpp"
