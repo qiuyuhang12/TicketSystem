@@ -14,6 +14,8 @@
 #include "utility.hpp"
 #include "exceptions.hpp"
 
+#ifndef debug
+
 namespace sjtu {
 
     template<
@@ -964,4 +966,5 @@ namespace sjtu {
 
 }
 
+#endif
 #endif

@@ -6,6 +6,7 @@
 //#include <climits>
 //#include <cstddef>
 #include <iostream>
+#ifndef debug
 
 namespace sjtu {
 /**
@@ -175,4 +176,5 @@ namespace sjtu {
 
 }
 
+#endif
 #endif

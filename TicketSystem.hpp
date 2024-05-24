@@ -4,11 +4,8 @@
 
 #ifndef TICKETSYSTEM_TICKETSYSTEM_HPP
 #define TICKETSYSTEM_TICKETSYSTEM_HPP
-//#define debug
+#define debug
 
-#include "BPT/BPT.hpp"
-#include "HashBPT.hpp"
-#include "BigBlockBpt.hpp"
 
 #ifdef debug
 
@@ -16,21 +13,24 @@
 #include <vector>
 #include <map>
 
-template<typename T>
-std::vector<T> sjtuVtoStdV(const sjtu::vector<T> &v) {
-    std::vector<T> rsl;
-//    for (auto &i: v) {
-    for (int i = 0; i < v.size(); ++i) {
-        rsl.push_back(v[i]);
-    }
-    return rsl;
-}
+//template<typename T>
+//std::vector<T> sjtuVtoStdV(const sjtu::vector<T> &v) {
+//    std::vector<T> rsl;
+////    for (auto &i: v) {
+//    for (int i = 0; i < v.size(); ++i) {
+//        rsl.push_back(v[i]);
+//    }
+//    return rsl;
+//}
 
 #define sjtu std
 
 
 #endif
 
+#include "BPT/BPT.hpp"
+#include "HashBPT.hpp"
+#include "BigBlockBpt.hpp"
 #include "StringFunction.hpp"
 #include "DateAndTimeStruct.hpp"
 
@@ -58,12 +58,12 @@ void clearFile() {
 class TicketSystem {
 private:
 #ifdef debug
-    public:
+public:
 #endif
 
 private://basic data structure
 #ifdef debug
-    public:
+public:
 #endif
 //    todo：修改price为累计价格
     enum orderStatus {
@@ -362,6 +362,7 @@ private://basic data structure
         }
 
 #ifndef cutRelease
+
         void print(const Train &train) {
             std::cout << trainID << " " << type << std::endl;
 #else
@@ -722,6 +723,7 @@ private://basic data structure
             rsl % 1000000007;
             return rsl;
         }
+
         UsernameForBPT() = default;
 
         explicit UsernameForBPT(const std::string &_username) {
@@ -1054,7 +1056,7 @@ private://basic data structure
 
 private://实现函数
 #ifdef debug
-    public:
+public:
 #endif
 
     LogUser *_getLoggedUser(const std::string &username) {
@@ -1173,10 +1175,10 @@ private://实现函数
             for (int j = 0; j < tTrains.size(); ++j) {
                 if (strcmp(sTrains[i].trainID, tTrains[j].trainID) == 0) {
                     if (sTrains[i].nowStation < tTrains[j].nowStation) {
-//                        ans.push_back(&(sTrains[i]));
-//                        ans2.push_back(&(tTrains[j]));
-                        ans.push_back(sTrains.data + i);
-                        ans2.push_back(tTrains.data + j);
+                        ans.push_back(&(sTrains[i]));
+                        ans2.push_back(&(tTrains[j]));
+//                        ans.push_back(sTrains.data + i);
+//                        ans2.push_back(tTrains.data + j);
                         firstStainDateVec.push_back(firstStainDate);
                         int price = 0, time = 0;
                         char *id = id = sTrains[i].trainID;
@@ -1210,6 +1212,7 @@ private://实现函数
             return;
         }
     }
+
 //#ifndef debug
 //    void _queryTicket(const std::string *start, const std::string *toward, int date, int pri,
 //                     std::vector<TrainForQTOnlyId *> &ans, std::vector<TrainForQTOnlyId *> &ans2,
@@ -1288,7 +1291,7 @@ private://实现函数
 
 private://主分支函数
 #ifdef debug
-    public:
+public:
 #endif
 
     //todo WARNING 或许ADDUSER指令不全/重复！
@@ -1351,7 +1354,8 @@ private://主分支函数
                 }
                 //考虑move
 #ifdef debug
-                vec = sjtuVtoStdV(Username_ToUser.find3(UsernameForBPT(v[i])));
+//                vec = sjtuVtoStdV(Username_ToUser.find3(UsernameForBPT(v[i])));
+                vec = Username_ToUser.find3(UsernameForBPT(v[i]));
 #else
                 vec = std::move(Username_ToUser.find3(UsernameForBPT(v[i])));
 #endif
@@ -1636,7 +1640,7 @@ private://主分支函数
         auto vec = std::move(TrainID_ToTrain.find3(TrainIDForBPT(*trainID)));
 #ifdef debug
         assert(vec.size() == 1);
-        assert(vec[0].released== true);
+        assert(vec[0].released == true);
 #endif
 #ifndef cutRelease
         rt.print(vec[0]);
@@ -1664,8 +1668,10 @@ private://主分支函数
 
         sjtu::vector<TrainForQTOnlyId> sTrains, tTrains;
 #ifdef debug
-        sTrains = sjtuVtoStdV(Station_TrainID_ToTrainForQTOlyId.find3(Station_TrainIDForBPT(start->c_str(), "")));
-        tTrains = sjtuVtoStdV(Station_TrainID_ToTrainForQTOlyId.find3(Station_TrainIDForBPT(toward->c_str(), "")));
+//        sTrains = sjtuVtoStdV(Station_TrainID_ToTrainForQTOlyId.find3(Station_TrainIDForBPT(start->c_str(), "")));
+//        tTrains = sjtuVtoStdV(Station_TrainID_ToTrainForQTOlyId.find3(Station_TrainIDForBPT(toward->c_str(), "")));
+        sTrains = Station_TrainID_ToTrainForQTOlyId.find3(Station_TrainIDForBPT(start->c_str(), ""));
+        tTrains = Station_TrainID_ToTrainForQTOlyId.find3(Station_TrainIDForBPT(toward->c_str(), ""));
 #endif
 #ifndef debug
         sTrains = std::move(Station_TrainID_ToTrainForQTOlyId.find3(Station_TrainIDForBPT(start->c_str(), "")));
@@ -1708,7 +1714,7 @@ private://主分支函数
             auto &i = tempe[i_];
             auto temp = std::move(TrainID_ToTrain.find3(TrainIDForBPT(i.trainID)));
 #ifdef debug
-            assert(temp.size()==1);
+            assert(temp.size() == 1);
 #endif
             sTrains.push_back(TrainForQT(temp[0], i));
         }
@@ -1716,7 +1722,8 @@ private://主分支函数
 //                Station_TrainIDForBPT(start->c_str(), ""));
         sjtu::vector<TrainForQTOnlyId> tTrains;
 #ifdef debug
-        tTrains = sjtuVtoStdV(Station_TrainID_ToTrainForQTOlyId.find3(Station_TrainIDForBPT(to->c_str(), "")));
+//        tTrains = sjtuVtoStdV(Station_TrainID_ToTrainForQTOlyId.find3(Station_TrainIDForBPT(to->c_str(), "")));
+        tTrains = Station_TrainID_ToTrainForQTOlyId.find3(Station_TrainIDForBPT(to->c_str(), ""));
 #endif
 #ifndef debug
         tTrains = std::move(Station_TrainID_ToTrainForQTOlyId.find3(Station_TrainIDForBPT(to->c_str(), "")));
@@ -1761,10 +1768,13 @@ private://主分支函数
                 tranStation = sTrains[i].stations[k];
 
 #ifdef debug
-                sTrains2.push_back(sjtuVtoStdV(
-                        Station_TrainID_ToTrainForQTOlyId.find3(Station_TrainIDForBPT(tranStation.c_str(), ""))));
-                tTrains2.push_back(
-                        sjtuVtoStdV(Station_TrainID_ToTrainForQTOlyId.find3(Station_TrainIDForBPT(to->c_str(), ""))));
+//                sTrains2.push_back(sjtuVtoStdV(
+//                        Station_TrainID_ToTrainForQTOlyId.find3(Station_TrainIDForBPT(tranStation.c_str(), ""))));
+//                tTrains2.push_back(
+//                        sjtuVtoStdV(Station_TrainID_ToTrainForQTOlyId.find3(Station_TrainIDForBPT(to->c_str(), ""))));
+                sTrains2.push_back(
+                        Station_TrainID_ToTrainForQTOlyId.find3(Station_TrainIDForBPT(tranStation.c_str(), "")));
+                tTrains2.push_back(Station_TrainID_ToTrainForQTOlyId.find3(Station_TrainIDForBPT(to->c_str(), "")));
 #endif
 #ifndef debug
                 sTrains2._push_back(Station_TrainID_ToTrainForQTOlyId.find3(Station_TrainIDForBPT(tranStation.c_str(), "")));
@@ -1923,8 +1933,8 @@ private://主分支函数
         auto vec2 = std::move(TrainID_ToTrain.find3(TrainIDForBPT(*trainID)));
         Train *t = &vec2[0];
 #ifdef debug
-        assert(vec2.size()==1);
-        assert(vec2[0].released== true);
+        assert(vec2.size() == 1);
+        assert(vec2[0].released == true);
 #endif
         std::cout << (t->price[tNum] - t->price[sNum]) * num << std::endl;
         TrainIDDate_ToReleasedTrain.changeHard(TrainIDDateForBPT(*trainID, date), *rt);
@@ -2012,12 +2022,12 @@ private://主分支函数
     }
 
 public:
-    TicketSystem() : Username_ToUser("Username_ToUser",50,50), Username_ToOrders("Username_ToOrders",50,50),
-                     TrainID_ToTrain("TrainID_ToTrain",50,50),
-                     TrainIDDate_ToReleasedTrain("TrainIDDate_ToReleasedTrain",50,50),
+    TicketSystem() : Username_ToUser("Username_ToUser", 50, 50), Username_ToOrders("Username_ToOrders", 50, 50),
+                     TrainID_ToTrain("TrainID_ToTrain", 50, 50),
+                     TrainIDDate_ToReleasedTrain("TrainIDDate_ToReleasedTrain", 50, 50),
 //                     Station_TrainID_ToTrainForQT("Station_TrainID_ToTrainForQT"),
-                     Station_TrainID_ToTrainForQTOlyId("Station_TrainID_ToTrainForQTOlyID",50,50),
-                     TrainIDDate_ToPends("TrainIDDate_ToPends",50,50) {
+                     Station_TrainID_ToTrainForQTOlyId("Station_TrainID_ToTrainForQTOlyID", 50, 50),
+                     TrainIDDate_ToPends("TrainIDDate_ToPends", 50, 50) {
 //        std::cout << "User_Size:  " << sizeof(User) << std::endl <<
 //                  "Train_Size:  " << sizeof(Train) << std::endl <<
 //                  "releasedTrain_Size:  " << sizeof(releasedTrain) << std::endl <<

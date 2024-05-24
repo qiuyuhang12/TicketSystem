@@ -4,7 +4,7 @@
 #include <cstddef>
 #include <cstring>
 #include <string>
-
+#ifndef debug
 namespace sjtu {
 
     class exception {
@@ -38,4 +38,5 @@ namespace sjtu {
     };
 }
 
+#endif
 #endif

@@ -29,7 +29,7 @@
 #define SJTU_UTILITY_HPP
 
 #include <utility>
-
+#ifndef debug
 namespace sjtu {
 
     template<class T1, class T2>
@@ -61,5 +61,5 @@ namespace sjtu {
     pair(T1, T2) -> pair<T1, T2>;
 
 }
-
+#endif
 #endif

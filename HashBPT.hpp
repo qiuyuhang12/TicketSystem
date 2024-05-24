@@ -103,9 +103,6 @@ public:
 
     void delete_(Key key, Value value) {
         //todo:优化
-#ifdef debug
-        assert(pos.size() == 1);
-#endif
         bpt.delete_(key.hash, value);
         size--;
     }
