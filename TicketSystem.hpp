@@ -2062,12 +2062,12 @@ public:
     }
 
 public:
-    TicketSystem() : Username_ToUser("Username_ToUser", 12000), Username_ToOrders("Username_ToOrders",10000),
-                     TrainID_ToTrain("TrainID_ToTrain", 12000),
-                     TrainIDDate_ToReleasedTrain("TrainIDDate_ToReleasedTrain", 400, 200),
+    TicketSystem() : Username_ToUser("Username_ToUser", 30000), Username_ToOrders("Username_ToOrders",30000),
+                     TrainID_ToTrain("TrainID_ToTrain", 30000),
+                     TrainIDDate_ToReleasedTrain("TrainIDDate_ToReleasedTrain", 600, 600),
 //                     Station_TrainID_ToTrainForQT("Station_TrainID_ToTrainForQT"),
-                     Station_TrainID_ToTrainForQTOlyId("Station_TrainID_ToTrainForQTOlyID", 400, 200),
-                     TrainIDDate_ToPends("TrainIDDate_ToPends", 400, 200) {
+                     Station_TrainID_ToTrainForQTOlyId("Station_TrainID_ToTrainForQTOlyID", 600, 600),
+                     TrainIDDate_ToPends("TrainIDDate_ToPends", 600, 600) {
 //        std::cout << "User_Size:  " << sizeof(User) << std::endl <<
 //                  "Train_Size:  " << sizeof(Train) << std::endl <<
 //                  "releasedTrain_Size:  " << sizeof(releasedTrain) << std::endl <<
